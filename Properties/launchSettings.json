@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "social_analytics": {
+      "commandName": "Project",
+      "workingDirectory": "F:\\vsLocations\\Location\\social_analytics\\root"
+    }
+  }
+}
