@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace social_analytics.Bl
 {
-    public class FrequencyDictionary<Tkey> : IEnumerable<KeyValuePair<Tkey, int>>, IFrequencyDictionary<Tkey>
+    public class FrequencyDictionary<Tkey> : IEnumerable<KeyValuePair<Tkey, int>>, IFrequencyDictionary<Tkey>,IHavePlustOperation<FrequencyDictionary<Tkey>>
     {
         private Dictionary<Tkey, int> _dict;
         public FrequencyDictionary()
@@ -65,6 +65,27 @@ namespace social_analytics.Bl
         IEnumerator IEnumerable.GetEnumerator()
         {
             return ((IEnumerable)_dict).GetEnumerator();
+        }
+
+        public FrequencyDictionary<Tkey> Plus(FrequencyDictionary<Tkey> add)
+        {
+            foreach (var pair in add)
+            {
+                if (_dict.ContainsKey(pair.Key))
+                {
+                    _dict[pair.Key]+=pair.Value;
+                }
+                else
+                {
+                    _dict[pair.Key] = pair.Value;
+                }
+            }
+            return this;
+        }
+
+        public FrequencyDictionary<Tkey> Value()
+        {
+            return this;
         }
     }
 }
