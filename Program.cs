@@ -1,5 +1,7 @@
 ﻿
+using social_analytics;
 using social_analytics.Bl;
+using System.Text;
 using System.Text.RegularExpressions;
 using Telegram.Td.Api;
 using TelegramWrapper.Helpers;
@@ -32,14 +34,12 @@ foreach (var el in msgs)
 {
     count += el.Item2.Count();
 }
-Dictionary<string, int> stat = new();
-foreach (var chat in msgs)
+var test = new TrySomething();
+foreach (var item in msgs.GetRange(2,2))
 {
-    MergeStat(stat, TextAnalytics.GetStat(chat.messages.Select(m=>m.Text).ToArray()) );
-    Console.WriteLine( stat.Count );
+    string[] word = TextAnalytics.GetEntities( string.Join(" ",item.messages.Select(m=>m.Text)) ).Select(m=>m.Value).ToArray();
+    Console.WriteLine( string.Join(Environment.NewLine, test.FindEntityGroups(4,word) )  );
 }
-var sorted = stat.OrderBy(lot=>-lot.Value).Select(x=>(x.Key,x.Value)).ToArray();
-Console.WriteLine( count );
 
 
 static void MergeStat(Dictionary<string, int> outStat, Dictionary<string, int> addStat)

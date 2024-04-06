@@ -17,8 +17,11 @@ namespace social_analytics.Bl
 
         public Task GetNouns(string text)
         {
-            var a = new TextEntity("word",0);
             throw new NotImplementedException();
+        }
+        static public IEnumerable<Match> GetEntities(string input)
+        {
+            return Regex.Matches(input, @"[\w]+").Where(m=>m.Value.Length > 2);
         }
         static public Dictionary<string, int> GetStat(params string[] inputs)
         {
@@ -29,7 +32,7 @@ namespace social_analytics.Bl
                 {
                     continue;
                 }
-                var matched = Regex.Matches(input, @"[\w]+");
+                var matched = GetEntities(input);
                 foreach (Match match in matched)
                 {
                     string value = match.Value.ToLower();
