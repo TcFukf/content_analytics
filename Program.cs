@@ -1,4 +1,5 @@
 ﻿
+using social_analytics.Bl;
 using System.Text.RegularExpressions;
 using Telegram.Td.Api;
 using TelegramWrapper.Helpers;
@@ -25,38 +26,35 @@ IClientWrapper tg = new TelegramClient(TelegramWrapper.Helpers.ConfigHelper.ApiI
 tg.InitAndWaitAuthorize();
 var chatIds = (tg.GetChats().Result);
 var pars = new Parser(tg);
-var messages = new List<MessageModel>();
-foreach (var id in chatIds)
+var msgs = Parser.ReadMessagesFromLocal("F:\\vsLocations\\Location\\TelegramWrapper\\root");
+int count = 0;
+foreach (var el in msgs)
 {
-     messages.AddRange( pars.GetMessages(id,10).Result.Select(m=>ModelConverter.FromTelegramMessageToWrapped(m)) );
-    
+    count += el.Item2.Count();
 }
-var res = GetStat(messages);
-Print(res);
-
-static Dictionary<string,int> GetStat(IEnumerable<MessageModel> messages)
+Dictionary<string, int> stat = new();
+foreach (var chat in msgs)
 {
-    Dictionary<string, int> stat = new();
-    foreach (var msg in messages)
+    MergeStat(stat, TextAnalytics.GetStat(chat.messages.Select(m=>m.Text).ToArray()) );
+    Console.WriteLine( stat.Count );
+}
+var sorted = stat.OrderBy(lot=>-lot.Value).Select(x=>(x.Key,x.Value)).ToArray();
+Console.WriteLine( count );
+
+
+static void MergeStat(Dictionary<string, int> outStat, Dictionary<string, int> addStat)
+{
+    foreach (var key in addStat.Keys)
     {
-        if (string.IsNullOrEmpty(msg.Text))
+        if (outStat.ContainsKey(key))
         {
-            continue;
+            outStat[key] += addStat[key];
         }
-        var matched = Regex.Matches(msg.Text,@"\w+");
-        foreach (Match match in matched)
+        else
         {
-            if (stat.ContainsKey(match.Value))
-            {
-                stat[match.Value] += 1;
-            }
-            else
-            {
-                stat[match.Value] = 1;
-            }
+            outStat[key] = addStat[key];
         }
     }
-    return stat;
 }
 static void Print<T>(IEnumerable<T> arr)
 {
