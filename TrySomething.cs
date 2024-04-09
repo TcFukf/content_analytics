@@ -49,7 +49,7 @@ namespace social_analytics
                     {
                         if (wordIndex != j)
                         {
-                            freqs[word].IncreaseFrequency(arr[j], 1);
+                            freqs[word].AddFrequency(arr[j], 1);
                         }
                     }
                 }

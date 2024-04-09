@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace social_analytics.Bl
 {
-    public class FrequencyDictionary<Tkey> : IEnumerable<KeyValuePair<Tkey, int>>, IFrequencyDictionary<Tkey>,IHavePlustOperation<FrequencyDictionary<Tkey>>
+    public class FrequencyDictionary<Tkey> : IFrequencyDictionary<Tkey>,IHavePlustOperation<FrequencyDictionary<Tkey>>
     {
         private Dictionary<Tkey, int> _dict;
         public FrequencyDictionary()
@@ -37,7 +37,7 @@ namespace social_analytics.Bl
             return _dict.Where(k=>k.Value>average + 1).Select(k=>k.Key).ToArray();
         }
 
-        public void IncreaseFrequency(Tkey key, int increment)
+        public void AddFrequency(Tkey key, int increment)
         {
             if (_dict.ContainsKey(key))
             {

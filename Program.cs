@@ -36,21 +36,11 @@ foreach (var chat in chats)
     count += chat.messages.Count();
 }
 string[] words = TextAnalytics.GetStringEntities(TrySomething.text).ToArray();
-var gp = TextAnalytics.GetGpaphs(2, words);
+List<FrequencyGraph<string>> gp = TextAnalytics.GetGpaphs(2, words).ToList();
 var test = new TrySomething();
 
 Dictionary<string, FrequencyDictionary<string>> d = new();
-foreach (var graph in gp)
-{
-    if (d.ContainsKey(graph.Value))
-    {
-        d[graph.Value].Plus(graph.Neightboors as FrequencyDictionary<string>);
-    }
-    else
-    {
-        d[graph.Value] = graph.Neightboors as FrequencyDictionary<string>;
-    }
-}
+
 
 
 Console.WriteLine(TrySomething.text);
