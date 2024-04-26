@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace social_analytics.Bl
+namespace social_analytics.Bl.structures
 {
-    public class FrequencyDictionary<Tkey> : IFrequencyDictionary<Tkey>,IHavePlustOperation<FrequencyDictionary<Tkey>>
+    public class FrequencyDictionary<Tkey> : IFrequencyDictionary<Tkey>, IHavePlustOperation<FrequencyDictionary<Tkey>>
     {
         private Dictionary<Tkey, int> _dict;
         public FrequencyDictionary()
@@ -34,7 +34,7 @@ namespace social_analytics.Bl
                 sum += count;
             }
             float average = sum / _dict.Count();
-            return _dict.Where(k=>k.Value>average + 1).Select(k=>k.Key).ToArray();
+            return _dict.Where(k => k.Value > average + 1).Select(k => k.Key).ToArray();
         }
 
         public void AddFrequency(Tkey key, int increment)
@@ -73,7 +73,7 @@ namespace social_analytics.Bl
             {
                 if (_dict.ContainsKey(pair.Key))
                 {
-                    _dict[pair.Key]+=pair.Value;
+                    _dict[pair.Key] += pair.Value;
                 }
                 else
                 {
@@ -87,5 +87,12 @@ namespace social_analytics.Bl
         {
             return this;
         }
+
+        public int Sum()
+        {
+            return _dict.Values.Sum();
+        }
+
+       
     }
 }

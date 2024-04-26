@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace social_analytics.Bl
+namespace social_analytics.Bl.structures
 {
     public class FrequencyGraph<T>
     {
@@ -15,9 +15,10 @@ namespace social_analytics.Bl
             Value = value;
             Neightboors = neight;
         }
+        
         public override string ToString()
         {
-            return Value?.ToString() + " : " + Neightboors.ToString();
+            return "val:" + Value?.ToString() + "  Count :   " + Neightboors.Count();
         }
     }
 }
