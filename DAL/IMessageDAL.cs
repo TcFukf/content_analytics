@@ -12,6 +12,6 @@ namespace social_analytics.DAL
     public interface IMessageDAL : IStoreData
     {
         Task InsertMessages(params MessageModel[] messages);
-        Task<IEnumerable<MessageModel>> GetMessages(MessageModel msg, int limit = -1, MessageFilterOptions? filter = null);
+        Task<IEnumerable<MessageModel>> GetMessages(long messageId,long chatId, int limit = -1, MessageFilterOptions? filter = null);
     }
 }

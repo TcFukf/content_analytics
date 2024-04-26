@@ -31,7 +31,7 @@ namespace social_analytics.DAL
                          """;
             await DbHelper.ExecuteAsync(sql, messages);
         }
-        public async Task<IEnumerable<MessageModel>> GetMessages(MessageModel msg, int limit = -1, MessageFilterOptions? filter = null)
+        public async Task<IEnumerable<MessageModel>> GetMessages(long messageId,long chatId, int limit = -1, MessageFilterOptions? filter = null)
         {
             MessageModel emptyModel = new MessageModel();
             string limitLine = $"limit {limit}";
@@ -54,7 +54,7 @@ namespace social_analytics.DAL
             {
                 sql.AppendLine(limitLine);
             }
-            return await DbHelper.Query<MessageModel>(sql.ToString(),msg);
+            return await DbHelper.Query<MessageModel>(sql.ToString(),new {MessageId = messageId,ChatId= chatId});
         }
 
         public async Task WriteEnumerable(IEnumerable<object> objects, Type objectType, string separator = "\n")
