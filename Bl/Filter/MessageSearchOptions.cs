@@ -6,12 +6,15 @@ using System.Threading.Tasks;
 
 namespace social_analytics.Bl.Filter
 {
-    public class MessageFilterOptions
+    public class MessageSearchOptions
     {
         /// <summary>
         /// included bound
         /// </summary>
         public DateTime? FromDate { get; set; }
+        public MessageSearchOptions()
+        {
+        }
         /// <summary>
         /// till day not included
         /// </summary>

@@ -57,7 +57,7 @@ namespace social_analytics.DAL
 
         }
 
-        public async Task<IEnumerable<MessageModel>> SearchMessages(MessageFilterOptions filter, int limit = -1)
+        public async Task<IEnumerable<MessageModel>> SearchMessages(MessageSearchOptions filter, int limit = -1)
         {
             string limitLine = $"limit {limit}";
             StringBuilder sql = new StringBuilder(

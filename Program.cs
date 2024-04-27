@@ -1,24 +1,12 @@
 ﻿
-using social_analytics;
-using social_analytics.Bl;
+
 using social_analytics.Bl.Filter;
-using social_analytics.Bl.structures;
+using social_analytics.Bl.Messages;
 using social_analytics.DAL;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.SymbolStore;
-using System.Net.Http.Headers;
-using System.Reflection;
-using System.Text;
-using System.Text.RegularExpressions;
 using Telegram.Td.Api;
-using TelegramWrapper.Gpt_imitator;
-using TelegramWrapper.Helpers;
-using TelegramWrapper.Models;
 using TelegramWrapper.TelegramParser;
 using TelegramWrapper.Wrapper;
 using TelegramWrapper.Wrapper.Bl;
-using TelegramWrapper.Wrapper.Bl.Handlers;
-using static System.Net.WebRequestMethods;
 // See https://aka.ms/new-console-template for more information
 Console.WriteLine("Hello, World!");
 //zlib1.dll
@@ -37,76 +25,26 @@ IClientWrapper tg = new TelegramClient(
                                        new ContextManager()
                                        );
 tg.InitAndWaitAuthorize();
-Dictionary<string, List<double>> wordsStat = new();
-Parser pars = new Parser(tg);
-MessageDAL dal = new MessageDAL();
-DateTime date = DateTime.UtcNow;
-date = date.AddDays(-date.Day+1);
-for (int day = date.Day; day < DateTime.DaysInMonth(date.Year,date.Month); day++)
+IClientParser pars = new Parser(tg);
+IMessageDAL dal = new MessageDAL();
+IMessagesBL messages = new MessagesBL(pars,dal);
+
+List<long> newsChats = new();
+foreach (var chatId in tg.GetChats().Result)
 {
-    MessageFilterOptions filter = new() { FromDate = date.Date.AddDays(day-1), TillDate = date.AddDays(day).Date};
-    var msgs = dal.SearchMessages(filter).Result?.ToArray();
-    if (msgs != null)
+    var chat = tg.GetChat(chatId).Result;
+    if (chat.Type is ChatTypeSupergroup)
     {
-        Console.WriteLine($"FROM DATE {filter.FromDate}  TILL {filter.TillDate}");
-        string[] words = TextAnalytics.GetStringEntities(null,msgs.Select(m=>m.Text).ToArray()).ToArray();
-        Console.WriteLine($"WORDS.COUNT = {words.Length}");
-        var grDict  = TextAnalytics.GetGpaphs(2,words);
-        (FrequencyGraph<string> graph, double prob)[] tr = TextAnalytics.RateGpaphsTextRank(grDict.Values.ToArray()).Values.ToArray();
-        (FrequencyGraph<string> graph, double prob)[] counted = TextAnalytics.RateGpaphs(grDict.Values.ToArray());
-        (FrequencyGraph<string> graph, double prob)[] freq = TextAnalytics.RateGpaphsByFrequency(grDict.Values.ToArray());
-        foreach (var st in counted)
-        {
-            if (wordsStat.ContainsKey(st.graph.Value))
-            {
-                wordsStat[st.graph.Value].Add(st.prob/(double)words.Length);
-            }
-            else
-            {
-                wordsStat[st.graph.Value] = new List<double>() { st.prob / (double)words.Length };
-            }
-        }
+        Console.WriteLine($"{chatId}, {chat.Title}");
+        newsChats.Add(chatId);
     }
 }
-foreach (var word in wordsStat.Keys)
-{
-    Console.WriteLine(word);
-    PrintLimit(wordsStat[word], 100, sep:", ");
-}
+DateTime date = DateTime.UtcNow.Date;
+var options = new MessageSearchOptions() { FromDate = date.AddDays(1+ -DateTime.DaysInMonth(date.Year,date.Month) )};
+var added = messages.UpdateMessagesInRepositoryFromChats(options,newsChats).Result;
 
-
+Console.WriteLine($"added count {added}");
 Console.WriteLine("press to end lol kek");
-static void Print<T>(params T[] arr)
-{
-    Console.WriteLine(string.Join(", ", arr));
-}
-static void PrintProbs((FrequencyGraph<string>, double)[] statis, int limit = int.MaxValue)
-{
-    int c = 0;
-    foreach (var stat in statis)
-    {
-        if (c >= limit)
-        {
-            break;
-        }
-        Console.WriteLine($"{stat.Item1.Value}, rate:{stat.Item2}");
-        c++;
-    }
-}
-static void PrintLimit<T>(IEnumerable<T> arr, int limit, string sep = "\n")
-{
-    int count = 0;
-    foreach (var item in arr)
-    {
-        if (count > limit)
-        {
-            break;
-        }
-        count++;
-        Console.Write(item + ", " + sep);
-    }
-    Console.WriteLine();
-}
 
 //(и, 3697, 4213776596757),
 //(в, 3115, 4038721718584),

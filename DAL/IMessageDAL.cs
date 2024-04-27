@@ -13,6 +13,6 @@ namespace social_analytics.DAL
     {
         Task InsertMessages(params MessageModel[] messages);
         Task<IEnumerable<MessageModel>> GetMessages(long messageId,long chatId, int limit = -1);
-        Task<IEnumerable<MessageModel>> SearchMessages(MessageFilterOptions filter, int limit = -1);
+        Task<IEnumerable<MessageModel>> SearchMessages(MessageSearchOptions filter, int limit = -1);
     }
 }
