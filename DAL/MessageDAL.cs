@@ -31,7 +31,7 @@ namespace social_analytics.DAL
                          """;
             await DbHelper.ExecuteAsync(sql, messages);
         }
-        public async Task<IEnumerable<MessageModel>> GetMessages(long messageId,long chatId, int limit = -1, MessageFilterOptions? filter = null)
+        public async Task<IEnumerable<MessageModel>> GetMessages(long messageId,long chatId, int limit = -1)
         {
             MessageModel emptyModel = new MessageModel();
             string limitLine = $"limit {limit}";
@@ -40,16 +40,6 @@ namespace social_analytics.DAL
                          select * from message where  (messageId,ChatId) = (@{nameof(emptyModel.MessageId)},@{nameof(emptyModel.ChatId)})
                          """
                                                  );
-            if (filter != null)
-            {
-                if (filter.From != null)
-                {
-                    string dateFilterLine = $"""
-                        where " {filter.From}<= Date and <= {filter.Till}"
-                        """;
-                    sql.AppendLine(dateFilterLine);
-                }
-            }
             if (limit != -1)
             {
                 sql.AppendLine(limitLine);
@@ -66,5 +56,32 @@ namespace social_analytics.DAL
             await InsertMessages(objects.Select(obj => obj as MessageModel)?.ToArray());
 
         }
+
+        public async Task<IEnumerable<MessageModel>> SearchMessages(MessageFilterOptions filter, int limit = -1)
+        {
+            string limitLine = $"limit {limit}";
+            StringBuilder sql = new StringBuilder(
+                         $"""
+                         select * from message{"\n"}
+                         """
+                                                 );
+            if (filter != null)
+            {
+                if (filter.FromDate != null)
+                {
+                    string dateFilterLine = $"""
+                        where  @{nameof(filter.FromDate)} <= "Date" and "Date" < @{nameof(filter.TillDate)}
+                        """;
+                    sql.AppendLine(dateFilterLine);
+                }
+            }
+            if (limit != -1)
+            {
+                sql.AppendLine(limitLine);
+            }
+            sql.AppendLine(";");
+            return await DbHelper.Query<MessageModel>(sql.ToString(), filter);
+        }
     }
 }
+

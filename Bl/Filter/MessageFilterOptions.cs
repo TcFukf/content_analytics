@@ -8,8 +8,14 @@ namespace social_analytics.Bl.Filter
 {
     public class MessageFilterOptions
     {
-        public DateTime? From { get; set; }
-        public DateTime? Till { get; set; }
+        /// <summary>
+        /// included bound
+        /// </summary>
+        public DateTime? FromDate { get; set; }
+        /// <summary>
+        /// till day not included
+        /// </summary>
+        public DateTime? TillDate { get; set; }
 
 
     }

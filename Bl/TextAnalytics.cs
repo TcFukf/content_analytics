@@ -107,21 +107,17 @@ namespace social_analytics.Bl
         {
             return values.Sum() / values.Length;
         }
-        static public  FrequencyGraph<T>[] RateGpaphs<T>(params FrequencyGraph<T>[] graphs)
+        static public (FrequencyGraph<T> graph, double rate)[] RateGpaphs<T>(params FrequencyGraph<T>[] graphs)
         {
 
-            var res = graphs.Select(gr=>gr.Neightboors.Sum());
-            int average = CalcAverage(res.ToArray());
-            return graphs.OrderBy( gr=>gr.Neightboors.Sum() ).ToArray();
+            return graphs.Select( gr=>(gr,(double)gr.Neightboors.Sum() ) ).OrderBy(tp=>-tp.Item2).ToArray();
         }
-        static public (FrequencyGraph<T> graph, double rate)[] RateGpaphsSmart<T>(params FrequencyGraph<T>[] graphs)
+        static public (FrequencyGraph<T> graph, double rate)[] RateGpaphsByFrequency<T>(params FrequencyGraph<T>[] graphs)
         {
 
-            var res = graphs.Select(gr => gr.Neightboors.Sum());
-            int average = CalcAverage(res.ToArray());
-            return graphs.Select( gr=> (gr,(double)gr.Neightboors.Sum() / gr.Neightboors.Count())  ).OrderBy(rate=> -rate.Item2).ToArray();
+            return graphs.Select( gr=> (gr,(double)gr.Neightboors.Sum() / gr.Neightboors.Count())  ).OrderBy(rate=>-rate.Item2).ToArray();
         }
-        static public (FrequencyGraph<T> graph, double probability)[] RateGpaphsTextRank<T>(params FrequencyGraph<T>[] graphs)
+        static public Dictionary<T, (FrequencyGraph<T> graph, double probability)> RateGpaphsTextRank<T>(params FrequencyGraph<T>[] graphs)
         {
 
             Dictionary<T, (FrequencyGraph<T> graph, double probability )> graphsDict = new ();
@@ -129,7 +125,7 @@ namespace social_analytics.Bl
             {
                 graphsDict[graph.Value] = (graph, (double)graph.Neightboors.Sum() / graph.Neightboors.Count());
             }
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 10; i++)
             {
 
                 foreach (var rate in graphsDict.Values)
@@ -145,7 +141,7 @@ namespace social_analytics.Bl
                     
                 }
             }
-            return graphsDict.Values.OrderBy(rate=>-rate.probability).ToArray();
+            return graphsDict;
         }
 
         static public Dictionary<Graph<string>, int> GetTextRangs(params Graph<string>[] graphs)

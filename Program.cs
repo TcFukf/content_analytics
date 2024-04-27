@@ -1,9 +1,12 @@
 ﻿
 using social_analytics;
 using social_analytics.Bl;
+using social_analytics.Bl.Filter;
 using social_analytics.Bl.structures;
 using social_analytics.DAL;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.SymbolStore;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -34,19 +37,61 @@ IClientWrapper tg = new TelegramClient(
                                        new ContextManager()
                                        );
 tg.InitAndWaitAuthorize();
+Dictionary<string, List<double>> wordsStat = new();
 Parser pars = new Parser(tg);
 MessageDAL dal = new MessageDAL();
-foreach (var chatId in tg.GetChats().Result)
+DateTime date = DateTime.UtcNow;
+date = date.AddDays(-date.Day+1);
+for (int day = date.Day; day < DateTime.DaysInMonth(date.Year,date.Month); day++)
 {
-    var messages = pars.GetMessages(chatId,500).Result.Select(tgm=>ModelConverter.FromTelegramMessageToWrapped(tgm))?.ToArray();
-    dal.InsertMessages(messages).Wait();
+    MessageFilterOptions filter = new() { FromDate = date.Date.AddDays(day-1), TillDate = date.AddDays(day).Date};
+    var msgs = dal.SearchMessages(filter).Result?.ToArray();
+    if (msgs != null)
+    {
+        Console.WriteLine($"FROM DATE {filter.FromDate}  TILL {filter.TillDate}");
+        string[] words = TextAnalytics.GetStringEntities(null,msgs.Select(m=>m.Text).ToArray()).ToArray();
+        Console.WriteLine($"WORDS.COUNT = {words.Length}");
+        var grDict  = TextAnalytics.GetGpaphs(2,words);
+        (FrequencyGraph<string> graph, double prob)[] tr = TextAnalytics.RateGpaphsTextRank(grDict.Values.ToArray()).Values.ToArray();
+        (FrequencyGraph<string> graph, double prob)[] counted = TextAnalytics.RateGpaphs(grDict.Values.ToArray());
+        (FrequencyGraph<string> graph, double prob)[] freq = TextAnalytics.RateGpaphsByFrequency(grDict.Values.ToArray());
+        foreach (var st in counted)
+        {
+            if (wordsStat.ContainsKey(st.graph.Value))
+            {
+                wordsStat[st.graph.Value].Add(st.prob/(double)words.Length);
+            }
+            else
+            {
+                wordsStat[st.graph.Value] = new List<double>() { st.prob / (double)words.Length };
+            }
+        }
+    }
+}
+foreach (var word in wordsStat.Keys)
+{
+    Console.WriteLine(word);
+    PrintLimit(wordsStat[word], 100, sep:", ");
 }
 
 
-
-static void Print<T>(IEnumerable<T> arr)
+Console.WriteLine("press to end lol kek");
+static void Print<T>(params T[] arr)
 {
     Console.WriteLine(string.Join(", ", arr));
+}
+static void PrintProbs((FrequencyGraph<string>, double)[] statis, int limit = int.MaxValue)
+{
+    int c = 0;
+    foreach (var stat in statis)
+    {
+        if (c >= limit)
+        {
+            break;
+        }
+        Console.WriteLine($"{stat.Item1.Value}, rate:{stat.Item2}");
+        c++;
+    }
 }
 static void PrintLimit<T>(IEnumerable<T> arr, int limit, string sep = "\n")
 {
@@ -60,8 +105,6 @@ static void PrintLimit<T>(IEnumerable<T> arr, int limit, string sep = "\n")
         count++;
         Console.Write(item + ", " + sep);
     }
-    Console.WriteLine();
-    Console.WriteLine();
     Console.WriteLine();
 }
 
