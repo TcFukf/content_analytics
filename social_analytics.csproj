@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.35" />
+    <PackageReference Include="DeepMorphy" Version="2.0.3" />
     <PackageReference Include="Npgsql" Version="8.0.2" />
   </ItemGroup>
 
@@ -25,7 +26,7 @@
 
   <ItemGroup>
     <Reference Include="Telegram.Td">
-      <HintPath>wwwroot\libs\Telegram.Td.dll</HintPath>
+      <HintPath>..\..\..\TelegramBlyat\td\build\Release\Telegram.Td.dll</HintPath>
     </Reference>
     <Reference Include="TelegramWrapper">
       <HintPath>..\TelegramWrapper\bin\Debug\net7.0\TelegramWrapper.dll</HintPath>
@@ -45,6 +46,10 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="root\" />
   </ItemGroup>
 
 </Project>

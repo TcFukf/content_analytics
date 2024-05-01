@@ -3,21 +3,10 @@
 using social_analytics.Bl.Filter;
 using social_analytics.Bl.Messages;
 using social_analytics.DAL;
-using Telegram.Td.Api;
+using TelegramWrapper.Models;
 using TelegramWrapper.TelegramParser;
 using TelegramWrapper.Wrapper;
 using TelegramWrapper.Wrapper.Bl;
-// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
-//zlib1.dll
-//libssl-3-x64.dll
-//libcrypto-3-x64.dll
-//Assembly.LoadFrom("./libs/Telegram.Td.dll");
-//Assembly.LoadFrom("./libs/libssl-3-x64.dll");
-//Assembly.LoadFrom("./libs/libcrypto-3-x64.dll");
-//Assembly.LoadFrom("./libs/zlib1.dll");
-
-
 
 IClientWrapper tg = new TelegramClient(
                                        TelegramWrapper.Helpers.ConfigHelper.ApiId,
@@ -29,22 +18,16 @@ IClientParser pars = new Parser(tg);
 IMessageDAL dal = new MessageDAL();
 IMessagesBL messages = new MessagesBL(pars,dal);
 
-List<long> newsChats = new();
-foreach (var chatId in tg.GetChats().Result)
-{
-    var chat = tg.GetChat(chatId).Result;
-    if (chat.Type is ChatTypeSupergroup)
-    {
-        Console.WriteLine($"{chatId}, {chat.Title}");
-        newsChats.Add(chatId);
-    }
-}
 DateTime date = DateTime.UtcNow.Date;
-var options = new MessageSearchOptions() { FromDate = date.AddDays(1+ -DateTime.DaysInMonth(date.Year,date.Month) )};
-var added = messages.UpdateMessagesInRepositoryFromChats(options,newsChats).Result;
+var model = new MessageModel();
 
-Console.WriteLine($"added count {added}");
-Console.WriteLine("press to end lol kek");
+var simOpt = new SimilarityOptions() { FieldName = nameof(model.Text),SimilarityWords = new string[] {"всу","рф" } };
+var dateOpt = new DateOptions() { FromDate = date.AddDays( - 1)};
+var options = new MessageSearchOptions() {DateOptions = dateOpt,SimilarityOptions = null };
+
+var temp = messages.SearchMessages(options).Result;
+Console.WriteLine(temp.Count());
+
 
 //(и, 3697, 4213776596757),
 //(в, 3115, 4038721718584),

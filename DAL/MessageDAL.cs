@@ -67,12 +67,36 @@ namespace social_analytics.DAL
                                                  );
             if (filter != null)
             {
-                if (filter.FromDate != null)
+                string whereLine = "where ";
+                bool wasWhereLine = false;
+                if (filter.DateOptions != null)
                 {
+                    sql.AppendLine(whereLine);
                     string dateFilterLine = $"""
-                        where  @{nameof(filter.FromDate)} <= "Date" and "Date" < @{nameof(filter.TillDate)}
+                        @{nameof(filter.DateOptions.FromDate)} <= "Date" and "Date" < @{nameof(filter.DateOptions.TillDate)}
                         """;
                     sql.AppendLine(dateFilterLine);
+                    wasWhereLine = true;
+                }
+                if (filter.SimilarityOptions != null)
+                {
+                    if (wasWhereLine && filter.SimilarityOptions.SimilarityWords.Length > 0)
+                    {
+                        sql.AppendLine(" AND ");
+                    }
+                    else
+                    {
+                        sql.AppendLine(whereLine);
+                    }
+                    int index = 0;
+                    string language = filter.SimilarityOptions.Language ?? "russian";
+                    for (index = 0; index < filter.SimilarityOptions.SimilarityWords.Length-1; index++)
+                    {
+                        string wordSim = filter.SimilarityOptions.SimilarityWords[index];
+                        sql.AppendLine($"""to_tsvector('{language}', "{filter.SimilarityOptions.FieldName}") @@ to_tsquery('{language}', '{wordSim}')""");
+                        sql.AppendLine(" AND ");
+                    }
+                    sql.AppendLine($"""to_tsvector('{language}', "{filter.SimilarityOptions.FieldName}") @@ to_tsquery('{language}', '{filter.SimilarityOptions.SimilarityWords.Last()}')""");
                 }
             }
             if (limit != -1)
@@ -80,7 +104,7 @@ namespace social_analytics.DAL
                 sql.AppendLine(limitLine);
             }
             sql.AppendLine(";");
-            return await DbHelper.Query<MessageModel>(sql.ToString(), filter);
+            return await DbHelper.Query<MessageModel>(sql.ToString(), new {FromDate = filter.DateOptions?.FromDate, TillDate = filter.DateOptions?.TillDate });
         }
     }
 }

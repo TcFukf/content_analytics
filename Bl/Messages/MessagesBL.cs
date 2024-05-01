@@ -47,7 +47,7 @@ namespace social_analytics.Bl.Messages
             foreach (var chatId in chatIds)
             {
                 Console.WriteLine($"NOW ENTER IN {chatId}");
-                tasks.Add(UpdateRepoFromChat(options,chatId));
+                added +=await UpdateRepoFromChat(options,chatId);
                 Console.WriteLine($"NOW END FROM {chatId}");
             }
             Task.WaitAll(tasks.ToArray());
@@ -80,7 +80,7 @@ namespace social_analytics.Bl.Messages
                 }
                 fromMessageId = messages.Last().Id;
             }
-            while (LastIsLaterThan(messages, options.FromDate));
+            while (LastIsLaterThan(messages, options.DateOptions.FromDate));
             return addedCount;
 
         }

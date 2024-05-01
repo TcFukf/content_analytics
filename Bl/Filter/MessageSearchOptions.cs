@@ -11,14 +11,15 @@ namespace social_analytics.Bl.Filter
         /// <summary>
         /// included bound
         /// </summary>
-        public DateTime? FromDate { get; set; }
+        public DateOptions DateOptions { get; set; }
+        public SimilarityOptions SimilarityOptions { get; set; }
+
         public MessageSearchOptions()
         {
         }
         /// <summary>
         /// till day not included
         /// </summary>
-        public DateTime? TillDate { get; set; }
 
 
     }

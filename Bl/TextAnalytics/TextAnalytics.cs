@@ -8,7 +8,7 @@ using social_analytics.Bl.structures;
 using Telegram.Td.Api;
 using TelegramWrapper.Models;
 
-namespace social_analytics.Bl
+namespace social_analytics.Bl.TextAnalytics
 {
     public class TextAnalytics
     {
@@ -17,9 +17,9 @@ namespace social_analytics.Bl
             List<string> output = new(inputs.Length);
             foreach (var input in inputs)
             {
-                if (! string.IsNullOrEmpty(input))
+                if (!string.IsNullOrEmpty(input))
                 {
-                    output.AddRange( Regex.Matches(input, @"[\w]+").Where(m=>ignoreWords==null || !ignoreWords.Contains(m.Value)).Select(match=>match.Value.ToLower()) );
+                    output.AddRange(Regex.Matches(input, @"[\w]+").Where(m => ignoreWords == null || !ignoreWords.Contains(m.Value)).Select(match => match.Value.ToLower()));
                 }
             }
             return output;
@@ -28,14 +28,14 @@ namespace social_analytics.Bl
         {
             foreach (var input in values)
             {
-                inputFrequency.AddFrequency(input,1);
+                inputFrequency.AddFrequency(input, 1);
             }
         }
-        static public Dictionary<T, FrequencyGraph<T>> GetGpaphs<T>( int neighborsFromSideCount, params T[] values)
+        static public Dictionary<T, FrequencyGraph<T>> GetGpaphs<T>(int neighborsFromSideCount, params T[] values)
         // if the values have distance <= neighborsFromSide, we consider them neighboring graphs
         {
             // 1 2 3 4 5 6 7 8
-           Dictionary<T,FrequencyGraph<T>> graphDict = new();
+            Dictionary<T, FrequencyGraph<T>> graphDict = new();
             Queue<int> right = new(neighborsFromSideCount);
             Queue<int> left = new(neighborsFromSideCount);
             int currentIndex = 0;
@@ -53,7 +53,7 @@ namespace social_analytics.Bl
                 FrequencyDictionary<T> neight = new FrequencyDictionary<T>();
                 foreach (var index in left)
                 {
-                    neight.AddFrequency(values[index],1);
+                    neight.AddFrequency(values[index], 1);
                 }
                 foreach (var index in right)
                 {
@@ -65,7 +65,7 @@ namespace social_analytics.Bl
                 }
                 else
                 {
-                    graphDict.Add(values[currentIndex], new FrequencyGraph<T>(values[currentIndex],neight) );
+                    graphDict.Add(values[currentIndex], new FrequencyGraph<T>(values[currentIndex], neight));
                 }
 
                 if (left.Count() >= neighborsFromSideCount)
@@ -86,22 +86,22 @@ namespace social_analytics.Bl
         // if the values have distance <= neighborsFromSide, we consider them neighboring graphs
         {
             // 1 2 3 4 5 6 7 8
-            Graph<T> st = new() {Value = values[0] };
+            Graph<T> st = new() { Value = values[0] };
             Queue<int> right = new(neighborsFromSideCount);
             Queue<int> left = new(neighborsFromSideCount);
             int currentIndex = 0;
             for (currentIndex = 0; currentIndex < values.Length; currentIndex++)
             {
-                for (int i = currentIndex+1; i < currentIndex+neighborsFromSideCount && i < values.Length; i++)
+                for (int i = currentIndex + 1; i < currentIndex + neighborsFromSideCount && i < values.Length; i++)
                 {
 
                 }
             }
             return null;
         }
-        static public double CalcAverage( params double [] values)
+        static public double CalcAverage(params double[] values)
         {
-            return values.Sum()/values.Length;
+            return values.Sum() / values.Length;
         }
         static public int CalcAverage(params int[] values)
         {
@@ -110,17 +110,17 @@ namespace social_analytics.Bl
         static public (FrequencyGraph<T> graph, double rate)[] RateGpaphs<T>(params FrequencyGraph<T>[] graphs)
         {
 
-            return graphs.Select( gr=>(gr,(double)gr.Neightboors.Sum() ) ).OrderBy(tp=>-tp.Item2).ToArray();
+            return graphs.Select(gr => (gr, (double)gr.Neightboors.Sum())).OrderBy(tp => -tp.Item2).ToArray();
         }
         static public (FrequencyGraph<T> graph, double rate)[] RateGpaphsByFrequency<T>(params FrequencyGraph<T>[] graphs)
         {
 
-            return graphs.Select( gr=> (gr,(double)gr.Neightboors.Sum() / gr.Neightboors.Count())  ).OrderBy(rate=>-rate.Item2).ToArray();
+            return graphs.Select(gr => (gr, (double)gr.Neightboors.Sum() / gr.Neightboors.Count())).OrderBy(rate => -rate.Item2).ToArray();
         }
         static public Dictionary<T, (FrequencyGraph<T> graph, double probability)> RateGpaphsTextRank<T>(params FrequencyGraph<T>[] graphs)
         {
 
-            Dictionary<T, (FrequencyGraph<T> graph, double probability )> graphsDict = new ();
+            Dictionary<T, (FrequencyGraph<T> graph, double probability)> graphsDict = new();
             foreach (var graph in graphs)
             {
                 graphsDict[graph.Value] = (graph, (double)graph.Neightboors.Sum() / graph.Neightboors.Count());
@@ -135,10 +135,10 @@ namespace social_analytics.Bl
                     foreach (var neight in neights)
                     {
                         var neightGr = graphsDict[neight.Key];
-                        probabilty += neightGr.probability/ neightGr.graph.Neightboors.Sum() * (int)neightGr.graph.Neightboors.GetFrequency(rate.graph.Value);
+                        probabilty += neightGr.probability / neightGr.graph.Neightboors.Sum() * (int)neightGr.graph.Neightboors.GetFrequency(rate.graph.Value);
                     }
                     graphsDict[rate.graph.Value] = (rate.graph, probabilty);
-                    
+
                 }
             }
             return graphsDict;
