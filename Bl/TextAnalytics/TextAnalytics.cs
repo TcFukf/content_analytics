@@ -12,7 +12,16 @@ namespace social_analytics.Bl.TextAnalytics
 {
     public class TextAnalytics
     {
-        static public IEnumerable<string> GetStringEntities(HashSet<string> ignoreWords, params string[] inputs)
+        static public IFrequencyDictionary<string> GetFrequenctGraph(string[] words)
+        {
+            IFrequencyDictionary<string> freq = new FrequencyDictionary<string>();
+            foreach (var word in words)
+            {
+                freq.AddFrequency(word,1);
+            }
+            return freq;
+        }
+        static public IEnumerable<string> GetStringEntities(HashSet<string> ignoreWords = null, params string[] inputs)
         {
             List<string> output = new(inputs.Length);
             foreach (var input in inputs)
@@ -135,7 +144,7 @@ namespace social_analytics.Bl.TextAnalytics
                     foreach (var neight in neights)
                     {
                         var neightGr = graphsDict[neight.Key];
-                        probabilty += neightGr.probability / neightGr.graph.Neightboors.Sum() * (int)neightGr.graph.Neightboors.GetFrequency(rate.graph.Value);
+                        probabilty += neightGr.probability / neightGr.graph.Neightboors.Sum() * (int)neightGr.graph.Neightboors.GetKeyCount(rate.graph.Value);
                     }
                     graphsDict[rate.graph.Value] = (rate.graph, probabilty);
 

@@ -4,11 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Telegram.Td.Api;
 
 namespace social_analytics.Bl.structures
 {
     public class FrequencyDictionary<Tkey> : IFrequencyDictionary<Tkey>, IHavePlustOperation<FrequencyDictionary<Tkey>>
     {
+        public int TotalCount { get; private set; } = 0;
         private Dictionary<Tkey, int> _dict;
         public FrequencyDictionary()
         {
@@ -17,11 +19,19 @@ namespace social_analytics.Bl.structures
         }
 
 
-        public int? GetFrequency(Tkey key)
+        public int? GetKeyCount(Tkey key)
         {
             if (_dict.ContainsKey(key))
             {
                 return _dict[key];
+            }
+            return null;
+        }
+        public double? GetKeyFrequency(Tkey key)
+        {
+            if (_dict.ContainsKey(key))
+            {
+                return 100*_dict[key] / (double)TotalCount ;
             }
             return null;
         }
@@ -47,6 +57,7 @@ namespace social_analytics.Bl.structures
             {
                 _dict[key] = increment;
             }
+            TotalCount += increment;
         }
         public override string ToString()
         {

@@ -2,32 +2,54 @@
 
 using social_analytics.Bl.Filter;
 using social_analytics.Bl.Messages;
+using social_analytics.Bl.TextAnalytics;
 using social_analytics.DAL;
 using TelegramWrapper.Models;
+using DeepMorphy;
 using TelegramWrapper.TelegramParser;
 using TelegramWrapper.Wrapper;
 using TelegramWrapper.Wrapper.Bl;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using TelegramWrapper.DAL;
+using Telegram.Td.Api;
+using social_analytics.Helpers;
+using social_analytics.Bl.structures;
+using social_analytics;
+
 
 IClientWrapper tg = new TelegramClient(
                                        TelegramWrapper.Helpers.ConfigHelper.ApiId,
                                        TelegramWrapper.Helpers.ConfigHelper.ApiHash,
                                        new ContextManager()
                                        );
-tg.InitAndWaitAuthorize();
+//Task.Run(()=>tg.InitAndWaitAuthorize());
 IClientParser pars = new Parser(tg);
 IMessageDAL dal = new MessageDAL();
 IMessagesBL messages = new MessagesBL(pars,dal);
+WordSkye wordSkye = new(new FrequencyDictionary<string>(),new PorterTransformator());
 
 DateTime date = DateTime.UtcNow.Date;
 var model = new MessageModel();
 
 var simOpt = new SimilarityOptions() { FieldName = nameof(model.Text),SimilarityWords = new string[] {"всу","рф" } };
-var dateOpt = new DateOptions() { FromDate = date.AddDays( - 1)};
+var dateOpt = new DateOptions() { FromDate = date.AddDays( - 50)};
 var options = new MessageSearchOptions() {DateOptions = dateOpt,SimilarityOptions = null };
 
-var temp = messages.SearchMessages(options).Result;
-Console.WriteLine(temp.Count());
+var temp = messages.SearchMessages(options).Result.Where(msg=>!string.IsNullOrEmpty(msg.Text));
+options.SimilarityOptions = simOpt;
 
+string[] words = TextAnalytics.GetStringEntities(null,temp.Where(msg=>!string.IsNullOrEmpty(msg.Text)).Select(msg=>msg.Text).ToArray()).ToArray();
+wordSkye.UpdateFrequencies(words);
+var message = temp.First();
+message.Text = Testing.text2;
+var list = TextAnalytics.GetStringEntities(null,message.Text).ToList();
+LogTools.PrintIE(list.OrderBy(word => wordSkye.GetKeyFrequency(word)));
+
+
+
+//JsonSerializerOptions serializerOptions = new JsonSerializerOptions() { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, MaxDepth = 5 };
+//string line = JsonSerializer.Serialize(stopWords,serializerOptions);
 
 //(и, 3697, 4213776596757),
 //(в, 3115, 4038721718584),
