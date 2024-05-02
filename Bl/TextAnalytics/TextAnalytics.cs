@@ -91,23 +91,7 @@ namespace social_analytics.Bl.TextAnalytics
             }
             return graphDict;
         }
-        static public Graph<string> GetGpaph<T>(int neighborsFromSideCount, params T[] values)
-        // if the values have distance <= neighborsFromSide, we consider them neighboring graphs
-        {
-            // 1 2 3 4 5 6 7 8
-            Graph<T> st = new() { Value = values[0] };
-            Queue<int> right = new(neighborsFromSideCount);
-            Queue<int> left = new(neighborsFromSideCount);
-            int currentIndex = 0;
-            for (currentIndex = 0; currentIndex < values.Length; currentIndex++)
-            {
-                for (int i = currentIndex + 1; i < currentIndex + neighborsFromSideCount && i < values.Length; i++)
-                {
 
-                }
-            }
-            return null;
-        }
         static public double CalcAverage(params double[] values)
         {
             return values.Sum() / values.Length;
@@ -153,11 +137,6 @@ namespace social_analytics.Bl.TextAnalytics
             return graphsDict;
         }
 
-        static public Dictionary<Graph<string>, int> GetTextRangs(params Graph<string>[] graphs)
-        {
-
-            throw new NotImplementedException();
-        }
     }
 
 }

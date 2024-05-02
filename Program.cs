@@ -42,9 +42,11 @@ options.SimilarityOptions = simOpt;
 string[] words = TextAnalytics.GetStringEntities(null,temp.Where(msg=>!string.IsNullOrEmpty(msg.Text)).Select(msg=>msg.Text).ToArray()).ToArray();
 wordSkye.UpdateFrequencies(words);
 var message = temp.First();
-message.Text = Testing.text2;
-var list = TextAnalytics.GetStringEntities(null,message.Text).ToList();
-LogTools.PrintIE(list.OrderBy(word => wordSkye.GetKeyFrequency(word)));
+var list = TextAnalytics.GetStringEntities(null,Testing.text).ToList();
+LogTools.PrintIE(list.DistinctBy(x=>x).OrderBy(word => wordSkye.GetKeyFrequency(word)));
+list = TextAnalytics.GetStringEntities(null, Testing.text2).ToList();
+Console.WriteLine();
+LogTools.PrintIE(list.DistinctBy(x => x).OrderBy(word => wordSkye.GetKeyFrequency(word)));
 
 
 
