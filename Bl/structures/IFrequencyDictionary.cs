@@ -7,6 +7,6 @@
         void AddFrequency(Tkey key, int increment);
         public Tkey[] FindMoreThanAverageKeys();
         public int Sum();
-        double? GetKeyFrequency(Tkey key);
+        double GetKeyFrequency(Tkey key);
     }
 }

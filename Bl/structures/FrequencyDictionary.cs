@@ -27,13 +27,18 @@ namespace social_analytics.Bl.structures
             }
             return null;
         }
-        public double? GetKeyFrequency(Tkey key)
+        /// <summary>
+        /// also meaning - probability to find key
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public double GetKeyFrequency(Tkey key)
         {
             if (_dict.ContainsKey(key))
             {
-                return 100*_dict[key] / (double)TotalCount ;
+                return _dict[key] / (double)TotalCount ;
             }
-            return null;
+            return 0;
         }
 
         public Tkey[] FindMoreThanAverageKeys()

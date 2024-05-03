@@ -12,12 +12,13 @@ namespace social_analytics.Bl.TextAnalytics
 {
     public class TextAnalytics
     {
+        public static HashSet<string> stopWords { get; set; } = null;
         static public IFrequencyDictionary<string> GetFrequenctGraph(string[] words)
         {
             IFrequencyDictionary<string> freq = new FrequencyDictionary<string>();
             foreach (var word in words)
             {
-                freq.AddFrequency(word,1);
+                freq.AddFrequency(word, 1);
             }
             return freq;
         }
@@ -136,7 +137,84 @@ namespace social_analytics.Bl.TextAnalytics
             }
             return graphsDict;
         }
+        static public List<string> GetSortedTags(string text, WordSkye frequencyСomparator)
+        {
+            return TextAnalytics.GetStringEntities(stopWords, text).DistinctBy(tagText=>tagText).OrderBy(word => frequencyСomparator.GetKeyFrequency(word)).ToList();
+        }
+        static public Dictionary<string, (int position, double weight)> PublicGetTagsBasic(List<string> sortedTags, Func<string,double> weightCalc)
+        {
+            Dictionary<string, (int position, double weight)> tagsTable = new();
+            for (int i = 0; i < sortedTags.Count; i++)
+            {
+                string word = sortedTags[i];
+                if (!tagsTable.ContainsKey(word))
+                {
+                    tagsTable.Add(word, (i,weightCalc(word)) );
+                }
+            }
+            return tagsTable;
+        }
+        static public double CalculateTagsSimilarity( Dictionary<string, (int position, double weight ) >  tagsTable, IEnumerable<(string tagKey,int tagPosition)> tags)
+        {
+            double similitary = 0;
+            foreach (var tag in tags)
+            {
+                float distance = float.MaxValue;
+                if (tagsTable.ContainsKey(tag.tagKey))
+                {
+                    distance = tagsTable[tag.tagKey].position - tag.tagPosition;
+                    similitary += (1 / distance) * tagsTable[tag.tagKey].weight; ;
+                }
+            }
+            return similitary;
+        }
+        static public double CalculateTagsSimilarity(Dictionary<string, (int position, double weight)> tagsTable, List<string> sortedTags)
+        {
+            int maxDistance = Math.Max(tagsTable.Count,sortedTags.Count);
+            double similitary = 0;
+            double totalSum = 0;
+            foreach (var tag in tagsTable)
+            {
+                totalSum += tag.Value.weight;
+            }
+            for (int i = 0; i < sortedTags.Count; i++)
+            {
+                (string tagKey, int tagPosition) tag = (sortedTags[i], i);
+                double distance = maxDistance;
+                double weight = 0;
+                if (tagsTable.ContainsKey(tag.tagKey))
+                {
+                    distance = Math.Abs(tagsTable[tag.tagKey].position - tag.tagPosition);
+                    weight = tagsTable[tag.tagKey].weight;
+                }
+                double distanceRate = CalcDistanceСoefficient(distance, maxDistance);
+                if (weight != 0)
+                    similitary += (1 - distanceRate) * weight;
+            }
+            return similitary/totalSum;
+        }
+        /// <summary>
+        /// при |basPos - tagPos| = 0 -> 0
+        /// при |basPos - tagPos| >= maxDistance -> 1 и больше соотв
+        /// </summary>
+        /// <param name="basicPosition"></param>
+        /// <param name="tagPosition"></param>
+        /// <param name="maxDistance"></param>
+        /// <returns></returns>
+        private static double CalcDistanceСoefficient(double distance,int maxDistance)
+        {
+            // чем БОЛЬШЕ attenuation  тем  ДОЛЬШЕ растет коэффицент.
+            // когда distance = maxDistance коээфицент равен 1( вес * (1-1) = 0) , и вот чем : больше attenuation тем больше веса получаем  при тойже дистании  
+            if (distance < 0)
+            {
+                throw new ArgumentException($"distance < 0 . eblan??");
+            }
+            int attenuation = 1000;
+            double a = Math.Log(maxDistance,maxDistance+attenuation);
+            double rate = distance / Math.Pow(distance+attenuation,a);
+            return rate;
 
+        }
     }
 
 }

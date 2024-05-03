@@ -52,7 +52,7 @@ namespace social_analytics.Bl.TextAnalytics
             return _freqDict.GetKeyCount(tranfkey);
         }
 
-        public double? GetKeyFrequency(string key)
+        public double GetKeyFrequency(string key)
         {
             string tranfkey = WordTranformator.TransformWord(key);
             return _freqDict.GetKeyFrequency(tranfkey);

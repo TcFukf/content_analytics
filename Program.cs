@@ -41,12 +41,28 @@ options.SimilarityOptions = simOpt;
 
 string[] words = TextAnalytics.GetStringEntities(null,temp.Where(msg=>!string.IsNullOrEmpty(msg.Text)).Select(msg=>msg.Text).ToArray()).ToArray();
 wordSkye.UpdateFrequencies(words);
-var message = temp.First();
-var list = TextAnalytics.GetStringEntities(null,Testing.text).ToList();
-LogTools.PrintIE(list.DistinctBy(x=>x).OrderBy(word => wordSkye.GetKeyFrequency(word)));
-list = TextAnalytics.GetStringEntities(null, Testing.text2).ToList();
-Console.WriteLine();
-LogTools.PrintIE(list.DistinctBy(x => x).OrderBy(word => wordSkye.GetKeyFrequency(word)));
+
+List<string> tagsMain = TextAnalytics.GetSortedTags(temp.Where(m=> m.Text!=null && m.Text.Length > 100).First().Text, wordSkye);
+List<string> tagsA = TextAnalytics.GetSortedTags(Testing.text,wordSkye);
+List<string> tagsB = TextAnalytics.GetSortedTags(Testing.text2, wordSkye);
+List<string> tagsC = TextAnalytics.GetSortedTags(Testing.text3, wordSkye);
+
+Dictionary<string, (int position, double weight)> tagsTable = TextAnalytics.PublicGetTagsBasic(tagsMain, (word)=>1/wordSkye.GetKeyFrequency(word)  );
+
+List<List<string>> tagsList = new() { tagsA,tagsB,tagsC};
+
+List<(long id, double sim)> test = new();
+foreach (var mess in temp)
+{
+    var tags = TextAnalytics.GetSortedTags(mess.Text,wordSkye);
+    double sim = TextAnalytics.CalculateTagsSimilarity(tagsTable,tags);
+    if (sim > 0.0001d)
+    {
+        test.Add((mess.MessageId,sim));
+    }
+}
+LogTools.PrintIE(test.OrderBy(duo=>duo.sim));
+
 
 
 
