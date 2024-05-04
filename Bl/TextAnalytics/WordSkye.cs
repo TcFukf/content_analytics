@@ -1,18 +1,12 @@
-﻿using social_analytics.Bl.structures;
-using System;
+﻿using Newtonsoft.Json;
+using social_analytics.Bl.structures;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Telegram.Td.Api;
 
 namespace social_analytics.Bl.TextAnalytics
 {
     public class WordSkye : IFrequencyDictionary<string>
     {
         private IFrequencyDictionary<string> _freqDict;
-        // a,s,f,b,f,f,f,
 
         public IWordTransforamtor WordTranformator { get; private set; }
 
@@ -46,7 +40,7 @@ namespace social_analytics.Bl.TextAnalytics
             return _freqDict.GetEnumerator();
         }
 
-        public int? GetKeyCount(string key)
+        public int GetKeyCount(string key)
         {
             string tranfkey = WordTranformator.TransformWord(key);
             return _freqDict.GetKeyCount(tranfkey);
@@ -67,5 +61,37 @@ namespace social_analytics.Bl.TextAnalytics
         {
             return _freqDict.GetEnumerator();
         }
+        public async Task SaveInFile(string fullPath)
+        {
+            JsonSerializerSettings settings = new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.Objects
+            };
+            string line = JsonConvert.SerializeObject(_freqDict,settings);
+            using (Stream str = new FileStream(fullPath, FileMode.Create))
+            {
+                using (StreamWriter sw = new StreamWriter(str))
+                {
+                    await sw.WriteLineAsync(line);
+                }
+            }
+        }
+        public async Task LoadFromFile(string fullPath)
+        {
+            JsonSerializerSettings settings = new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.Objects
+            };
+            using (Stream str = new FileStream(fullPath, FileMode.Open))
+            {
+                using (StreamReader sw = new StreamReader(str))
+                {
+                    string line = await sw.ReadLineAsync();
+                    var freqDict = JsonConvert.DeserializeObject<FrequencyDictionary<string>>(sw.ReadLine(),settings);
+                    _freqDict = freqDict;
+                }
+            }
+        }
     }
+    
 }

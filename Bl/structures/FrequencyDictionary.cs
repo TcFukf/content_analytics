@@ -8,6 +8,7 @@ using Telegram.Td.Api;
 
 namespace social_analytics.Bl.structures
 {
+    [Serializable]
     public class FrequencyDictionary<Tkey> : IFrequencyDictionary<Tkey>, IHavePlustOperation<FrequencyDictionary<Tkey>>
     {
         public int TotalCount { get; private set; } = 0;
@@ -19,13 +20,13 @@ namespace social_analytics.Bl.structures
         }
 
 
-        public int? GetKeyCount(Tkey key)
+        public int GetKeyCount(Tkey key)
         {
             if (_dict.ContainsKey(key))
             {
                 return _dict[key];
             }
-            return null;
+            return 0;
         }
         /// <summary>
         /// also meaning - probability to find key

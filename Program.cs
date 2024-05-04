@@ -33,7 +33,7 @@ DateTime date = DateTime.UtcNow.Date;
 var model = new MessageModel();
 
 var simOpt = new SimilarityOptions() { FieldName = nameof(model.Text),SimilarityWords = new string[] {"всу","рф" } };
-var dateOpt = new DateOptions() { FromDate = date.AddDays( - 50)};
+var dateOpt = new DateOptions() { FromDate = date.AddDays( - 5)};
 var options = new MessageSearchOptions() {DateOptions = dateOpt,SimilarityOptions = null };
 
 var temp = messages.SearchMessages(options).Result.Where(msg=>!string.IsNullOrEmpty(msg.Text));
@@ -41,28 +41,21 @@ options.SimilarityOptions = simOpt;
 
 string[] words = TextAnalytics.GetStringEntities(null,temp.Where(msg=>!string.IsNullOrEmpty(msg.Text)).Select(msg=>msg.Text).ToArray()).ToArray();
 wordSkye.UpdateFrequencies(words);
+wordSkye.SaveInFile(Directory.GetCurrentDirectory() + "\\wordSkye.txt").Wait();
+wordSkye.LoadFromFile(Directory.GetCurrentDirectory()+"\\wordSkye.txt");
 
-List<string> tagsMain = TextAnalytics.GetSortedTags(temp.Where(m=> m.Text!=null && m.Text.Length > 100).First().Text, wordSkye);
-List<string> tagsA = TextAnalytics.GetSortedTags(Testing.text,wordSkye);
-List<string> tagsB = TextAnalytics.GetSortedTags(Testing.text2, wordSkye);
-List<string> tagsC = TextAnalytics.GetSortedTags(Testing.text3, wordSkye);
+var scales = new WordTagScales(wordSkye);
+WordTags tagsMain = new (TextAnalytics.GetStringEntities(temp.First(msg=>msg.Text.Length > 200).Text), scales,false);
+WordTags tagsA  = new(TextAnalytics.GetStringEntities(Testing.text), scales,false);
+WordTags tagsB = new(TextAnalytics.GetStringEntities(Testing.text2), scales,false);
+WordTags tagsC = new(TextAnalytics.GetStringEntities(Testing.text3), scales,false);
 
-Dictionary<string, (int position, double weight)> tagsTable = TextAnalytics.PublicGetTagsBasic(tagsMain, (word)=>1/wordSkye.GetKeyFrequency(word)  );
 
-List<List<string>> tagsList = new() { tagsA,tagsB,tagsC};
-
-List<(long id, double sim)> test = new();
-foreach (var mess in temp)
-{
-    var tags = TextAnalytics.GetSortedTags(mess.Text,wordSkye);
-    double sim = TextAnalytics.CalculateTagsSimilarity(tagsTable,tags);
-    if (sim > 0.0001d)
-    {
-        test.Add((mess.MessageId,sim));
-    }
-}
-LogTools.PrintIE(test.OrderBy(duo=>duo.sim));
-
+List<WordTags> tagsList = new() { tagsMain,tagsA,tagsB,tagsC};
+LogTools.PrintIE(tagsList.Select(tg=>(TextAnalytics.CalculateTagsSimilarity(tagsMain,tg,scales))));
+tagsMain.HashGetByKey();
+LogTools.PrintIE(tagsList.Select(tg => (TextAnalytics.CalculateTagsSimilarity(tagsMain, tg, scales))));
+Console.WriteLine("END");
 
 
 
