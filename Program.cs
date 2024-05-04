@@ -16,6 +16,8 @@ using Telegram.Td.Api;
 using social_analytics.Helpers;
 using social_analytics.Bl.structures;
 using social_analytics;
+using social_analytics.Bl.TextAnalytics.WordTransformers;
+using DeepMorphy.Model;
 
 
 IClientWrapper tg = new TelegramClient(
@@ -23,41 +25,41 @@ IClientWrapper tg = new TelegramClient(
                                        TelegramWrapper.Helpers.ConfigHelper.ApiHash,
                                        new ContextManager()
                                        );
-//Task.Run(()=>tg.InitAndWaitAuthorize());
+//tg.InitAndWaitAuthorize();
 IClientParser pars = new Parser(tg);
 IMessageDAL dal = new MessageDAL();
 IMessagesBL messages = new MessagesBL(pars,dal);
 WordSkye wordSkye = new(new FrequencyDictionary<string>(),new PorterTransformator());
-
+WordTagScales defScales = new WordTagScales(wordSkye);
 DateTime date = DateTime.UtcNow.Date;
 var model = new MessageModel();
 
-var simOpt = new SimilarityOptions() { FieldName = nameof(model.Text),SimilarityWords = new string[] {"всу","рф" } };
-var dateOpt = new DateOptions() { FromDate = date.AddDays( - 5)};
+//var simOpt = new SimilarityOptions() { FieldName = nameof(model.Text),SimilarityWords = new string[] {"всу","рф" } };
+var dateOpt = new DateOptions() { FromDate = date.AddDays(-10)};
 var options = new MessageSearchOptions() {DateOptions = dateOpt,SimilarityOptions = null };
 
 var temp = messages.SearchMessages(options).Result.Where(msg=>!string.IsNullOrEmpty(msg.Text));
-options.SimilarityOptions = simOpt;
+
 
 string[] words = TextAnalytics.GetStringEntities(null,temp.Where(msg=>!string.IsNullOrEmpty(msg.Text)).Select(msg=>msg.Text).ToArray()).ToArray();
-wordSkye.UpdateFrequencies(words);
-wordSkye.SaveInFile(Directory.GetCurrentDirectory() + "\\wordSkye.txt").Wait();
-wordSkye.LoadFromFile(Directory.GetCurrentDirectory()+"\\wordSkye.txt");
 
-var scales = new WordTagScales(wordSkye);
-WordTags tagsMain = new (TextAnalytics.GetStringEntities(temp.First(msg=>msg.Text.Length > 200).Text), scales,false);
-WordTags tagsA  = new(TextAnalytics.GetStringEntities(Testing.text), scales,false);
-WordTags tagsB = new(TextAnalytics.GetStringEntities(Testing.text2), scales,false);
-WordTags tagsC = new(TextAnalytics.GetStringEntities(Testing.text3), scales,false);
+wordSkye.LoadWordsFromFile(Directory.GetCurrentDirectory()+"\\"+ "wordSkye.json");
 
+string morpthWordSkyePath = Directory.GetCurrentDirectory() + "\\" + "MorphwordSkye.json";
+var morph2 = new MorphAnalyzer(withLemmatization:true,maxBatchSize: 8096);
 
-List<WordTags> tagsList = new() { tagsMain,tagsA,tagsB,tagsC};
-LogTools.PrintIE(tagsList.Select(tg=>(TextAnalytics.CalculateTagsSimilarity(tagsMain,tg,scales))));
-tagsMain.HashGetByKey();
-LogTools.PrintIE(tagsList.Select(tg => (TextAnalytics.CalculateTagsSimilarity(tagsMain, tg, scales))));
-Console.WriteLine("END");
+WordSkye morphWordSkye = new(new FrequencyDictionary<string>(),new MorphTransformer(morph2));
+var Morphscales = new WordTagScales(morphWordSkye);
+morphWordSkye.LoadWordsFromFile(morpthWordSkyePath);
 
+WordTags mainVector = new WordTags(TextAnalytics.GetStringEntities(Testing.text),defScales,true);
+//WordTags mainVector2 = new WordTags(TextAnalytics.GetStringEntities(Testing.text), Morphscales, true);
+WordTags VectorA = new WordTags(TextAnalytics.GetStringEntities(Testing.text2), defScales, true);
+WordTags VectorB = new WordTags(TextAnalytics.GetStringEntities(Testing.text3), defScales, true);
 
+WordTags[] tags = new WordTags[] {mainVector,VectorA,VectorB };
+LogTools.PrintIE(tags.Select(tg => TextAnalytics.CalculateTagsSimilarity(mainVector, tg, defScales)) );
+LogTools.PrintIE(tags.Select(tg => TextAnalytics.CalculateTagsSimilarity(mainVector, tg, Morphscales)));
 
 //JsonSerializerOptions serializerOptions = new JsonSerializerOptions() { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, MaxDepth = 5 };
 //string line = JsonSerializer.Serialize(stopWords,serializerOptions);

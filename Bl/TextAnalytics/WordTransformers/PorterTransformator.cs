@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace social_analytics.Bl.TextAnalytics
+namespace social_analytics.Bl.TextAnalytics.WordTransformers
 {
     public class PorterTransformator : IWordTransforamtor
     {

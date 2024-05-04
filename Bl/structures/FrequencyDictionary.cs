@@ -1,14 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using Telegram.Td.Api;
 
 namespace social_analytics.Bl.structures
 {
-    [Serializable]
     public class FrequencyDictionary<Tkey> : IFrequencyDictionary<Tkey>, IHavePlustOperation<FrequencyDictionary<Tkey>>
     {
         public int TotalCount { get; private set; } = 0;
@@ -18,7 +16,11 @@ namespace social_analytics.Bl.structures
             _dict = new();
             var a = _dict.GetEnumerator();
         }
-
+        public FrequencyDictionary(Dictionary<Tkey,int> dictFreq)
+        {
+            _dict = dictFreq;
+            TotalCount = dictFreq.Values.Sum();
+        }
 
         public int GetKeyCount(Tkey key)
         {
@@ -108,6 +110,10 @@ namespace social_analytics.Bl.structures
         public int Sum()
         {
             return _dict.Values.Sum();
+        }
+        public string GetJsonDict()
+        {
+            return JsonConvert.SerializeObject(_dict,Formatting.Indented);
         }
 
        
