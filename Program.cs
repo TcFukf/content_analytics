@@ -26,38 +26,50 @@ using System.Collections;
 using System.Xml;
 
 
+
+string currentDir = Directory.GetCurrentDirectory();
+string bigFilePath = "\\books\\wiki\\";
+string bookPath = "\\freqDict\\";
+
 IClientWrapper tg = new TelegramClient(
                                        TelegramWrapper.Helpers.ConfigHelper.ApiId,
                                        TelegramWrapper.Helpers.ConfigHelper.ApiHash,
                                        new ContextManager()
                                        );
+tg.InitAndWaitAuthorize();
+MessagesBL msg = new MessagesBL(new Parser(tg),new MessageDAL());
 
-string currentDir = Directory.GetCurrentDirectory();
-string bigFilePath = "\\books\\wiki\\";
-string bookPath = "\\freqDict\\";
-string ouotr = "outWiki";
-string dirPath = currentDir + bookPath+ "\\outWiki\\"; 
+var options = new MessageSearchOptions() 
+                        { DateOptions = new DateOptions()
+                                        { 
+                                            FromDate = DateTime.UtcNow.Date.AddDays(-5),
+                                            TillDate = DateTime.UtcNow.Date
+                            
+                                        },
+                         SimilarityOptions = new SimilarityOptions() { SimilarityWords = new string[] {"крокус"} }
+                        };
+var messages =  msg.SearchMessages(options).Result.Where(m=>m.Text?.Length > 1).ToArray();
+var news = messages.Where(msg=>msg.Text?.Length > 100).First();
 
-
-Dictionary<string, int> totalDict = new();
-
-var freqDict = new FrequencyDictionary<string>(totalDict);
-
-var freqSkye = new FrequencySkye(freqDict, new PorterTransformator());
-
+var freqSkye = new FrequencySkye(new FrequencyDictionary<string>(), new PorterTransformator());
 freqSkye.LoadWordsFromFile(currentDir+bookPath+"allwiki.json");
-var scales = new FreqWordScales(freqSkye);
-var mscales = new MorphTagScales(freqSkye,new MorphAnalyzer(withLemmatization:true));
-Console.WriteLine();
-var arct = Testing.GetArtickes();
+var textAnalyzer = new TextAnalyzer(new FreqWordScales(freqSkye));
 
-var news = Testing.GetNews();
-Console.WriteLine("NEWS");
-LogTools.PrintIE(TextAnalyzer.TextSimilarity(news[0], scales, news).ToArray());
-LogTools.PrintIE(TextAnalyzer.TextSimilarity(news[0], mscales, news).ToArray());
-Console.WriteLine("ARTICLES");
-LogTools.PrintIE(TextAnalyzer.TextSimilarity(arct[0], scales, arct).ToArray());
-LogTools.PrintIE(TextAnalyzer.TextSimilarity(arct[0], mscales, arct).ToArray());
+int i = 0;
+var newsRates = textAnalyzer.TextSimilarity(news.Text,messages.Select(msg=>msg.Text));
+List<(string,double)> rates = new();
+foreach (var rate in newsRates)
+{
+    if (rate*100 > 20)
+    {
+
+    }
+    rates.Add((messages[i].Text,rate));
+    i++;
+}
+rates = rates.OrderBy(rate => rate.Item2).ToList();
+LogTools.PrintIE(rates,sep:"\n\n\n" );
+
 static void CreateFreqDictsFromFiles(string currentDir, string bookPath, string ouotr, string[] files, Queue<Thread> threads, int threadCount)
 {
     foreach (var file in files)

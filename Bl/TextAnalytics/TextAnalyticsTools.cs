@@ -111,6 +111,8 @@ namespace social_analytics.Bl.TextAnalytics
 
         // ВЕКТОР ТЕГОВ ДОЛЖЕН 1:ОТОБРОЖАТЬ ВСЕ СЛОВА ОДИНАКОВО 2:  РАНЖИРОВАТЬ ОДИНАКОВО. 3:если отображение встреч 2жды оставляет (ПОКА что) только 1
         // СЕЙЧАС СРАВНИВАЕТ  ТЕГИ У ОДНОГО ВЕКТОРА  И CalculateTagsSimilarity(L,R) != CalculateTagsSimilarity(R,L) думать нужно ли это
+
+        // ИЗ ЗА ТОГО ЧТО ТЕГОВ МНОГО ДАЖЕ ЕСЛИ ТЕКСТЫ СОДЕРЖАТ ВАЖНОЕ СЛОВО ЕГО ВЕС МАЛ ДЛЯ БОЛЬШИХ ТЕКСТОВ И мУСОРНЫЕ СЛОВА ПЕРЕБИВАЮТ СХОДСТВО
         static public double CalculateTagsSimilarity(WordTags tagsTable, WordTags tags,ITagScales scales)
         {
             int maxDistance = Math.Max(tagsTable.Length, tags.Length);

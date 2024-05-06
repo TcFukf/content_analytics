@@ -2,6 +2,6 @@
 {
     public interface ITextAnalyzer
     {
-        IEnumerable<double> TextSimilarity(string comparedText, params string[] text);
+        IEnumerable<double> TextSimilarity(string comparedText, IEnumerable<string> text);
     }
 }
