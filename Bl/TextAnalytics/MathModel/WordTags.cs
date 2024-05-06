@@ -17,7 +17,7 @@ namespace social_analytics.Bl.TextAnalytics.MathModel
         private Dictionary<string, int> _hashIndexes = null;
         public WordTags(IEnumerable<string> words, ITagScales scales, bool hashGetByKey)
         {
-            _tags = words.OrderBy(word => scales.CalcOrder(word)).DistinctBy(w => w).Select(word => word).ToList();
+            _tags = words.OrderBy(word => scales.CalcOrder(word)).Select(word => scales.GetForm(word)).DistinctBy(w => w).ToList();
             if (hashGetByKey)
             {
                 HashGetByKey();
@@ -49,13 +49,9 @@ namespace social_analytics.Bl.TextAnalytics.MathModel
 
         public (string tagKey, int tagPosition)? GetByKey(string tagKey)
         {
-            if (_hashIndexes != null)
+            if (_hashIndexes != null && _hashIndexes.ContainsKey(tagKey))
             {
-                if (_hashIndexes.ContainsKey(tagKey))
-                {
-                    return (tagKey, _hashIndexes[tagKey]);
-                }
-                return null;
+                return (tagKey, _hashIndexes[tagKey]);
             }
             for (int i = 0; i < _tags.Count; i++)
             {

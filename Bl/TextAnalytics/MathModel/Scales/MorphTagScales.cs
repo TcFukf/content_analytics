@@ -9,30 +9,36 @@ namespace social_analytics.Bl.TextAnalytics.MathModel.Scales
 {
     public class MorphTagScales : ITagScales
     {
-        private readonly FrequencySkye frequencyDict;
+        private readonly FrequencySkye frequencySkye;
         private readonly MorphAnalyzer morphAnalyzer;
         public MorphTagScales(FrequencySkye freqDict,MorphAnalyzer morph)
         {
-            this.frequencyDict = freqDict;
+            this.frequencySkye = freqDict;
             this.morphAnalyzer = morph;
         }
         public double CalcOrder(string word)
         {
-            return frequencyDict.GetKeyFrequency(word);
+            return frequencySkye.GetKeyFrequency(word);
         }
 
         public double CalcWeight(string word)
         {
             var gramm = morphAnalyzer.Parse(word).ToList().First();
-            if (frequencyDict.GetKeyCount(word) == 0)
+            if (frequencySkye.GetKeyCount(word) == 0)
             {
+                Console.WriteLine($"NOT IN SKYE :{word}");
                 return 0;
             }
             if (gramm?.BestTag?.GramsDic["чр"] == "сущ")
             {
-                return 1 /( frequencyDict.GetKeyFrequency(word)) * Math.Pow(word.Length, 1d) * 100;
+                return 1 /( frequencySkye.GetKeyFrequency(word)) * Math.Pow(word.Length, 1d) * 100;
             }
-            return 1 / (frequencyDict.GetKeyFrequency(word)) * Math.Pow(word.Length, 1d) ;
+            return 1 / (frequencySkye.GetKeyFrequency(word)) * Math.Pow(word.Length, 1d) ;
+        }
+
+        public string GetForm(string word)
+        {
+            return frequencySkye.WordTranformator.TransformWord(word);
         }
     }
 }

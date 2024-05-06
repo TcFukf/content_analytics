@@ -110,6 +110,7 @@ namespace social_analytics.Bl.TextAnalytics
         // МБ УБРАТЬ DI ОТ SCALES И ОСТАВИТЬ ТОКА ВЕКТОРЫ И ЛОГИКУ КАК ИХ СРАВНИВАТЬ
 
         // ВЕКТОР ТЕГОВ ДОЛЖЕН 1:ОТОБРОЖАТЬ ВСЕ СЛОВА ОДИНАКОВО 2:  РАНЖИРОВАТЬ ОДИНАКОВО. 3:если отображение встреч 2жды оставляет (ПОКА что) только 1
+        // СЕЙЧАС СРАВНИВАЕТ  ТЕГИ У ОДНОГО ВЕКТОРА  И CalculateTagsSimilarity(L,R) != CalculateTagsSimilarity(R,L) думать нужно ли это
         static public double CalculateTagsSimilarity(WordTags tagsTable, WordTags tags,ITagScales scales)
         {
             int maxDistance = Math.Max(tagsTable.Length, tags.Length);

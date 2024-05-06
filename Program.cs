@@ -50,8 +50,15 @@ var scales = new FreqWordScales(freqSkye);
 var mscales = new MorphTagScales(freqSkye,new MorphAnalyzer(withLemmatization:true));
 Console.WriteLine();
 var arct = Testing.GetArtickes();
-LogTools.PrintIE(TextAnalyzer.TextSimilarity(arct[4], scales, arct).ToArray());
-double[] sims = TextAnalyzer.TextSimilarity(arct[4], mscales, arct).ToArray();
+
+var news = Testing.GetNews();
+Console.WriteLine("NEWS");
+LogTools.PrintIE(TextAnalyzer.TextSimilarity(news[1], scales, news).ToArray());
+LogTools.PrintIE(TextAnalyzer.TextSimilarity(news[1], mscales, news).ToArray());
+Console.WriteLine("ARCTICLES");
+LogTools.PrintIE(TextAnalyzer.TextSimilarity(arct[0], mscales, arct).ToArray());
+Console.WriteLine();
+double[] sims = TextAnalyzer.TextSimilarity(arct[0], scales, arct).ToArray();
 for (int i = 0; i < arct.Length; i++)
 {
     string str = $"{arct[i].Substring(0,20)} : {sims[i]}";

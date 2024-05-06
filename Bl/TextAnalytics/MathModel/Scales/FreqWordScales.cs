@@ -23,9 +23,15 @@ namespace social_analytics.Bl.TextAnalytics.MathModel.Scales
         {
             if( frequencyDict.GetKeyCount(word) == 0)
             {
+                Console.WriteLine($"defScales* NOT IN SKYE :{word}");
                 return 0;
             }
             return 1 / (frequencyDict.GetKeyFrequency(word)) * Math.Pow(word.Length, 1d);
+        }
+
+        public string GetForm(string word)
+        {
+            return frequencyDict.WordTranformator.TransformWord(word);
         }
     }
 }
