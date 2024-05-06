@@ -129,7 +129,8 @@ namespace social_analytics.Bl.TextAnalytics
                     distance = Math.Abs(basicTag.Value.tagPosition - tag.tagPosition);
                     weight = scales.CalcWeight(basicTag.Value.tagKey);
                 }
-                double distanceRate = CalcDistanceСoefficient(distance, maxDistance);
+                //double distanceRate = CalcDistanceСoefficient(distance, maxDistance);
+                double distanceRate = 0;
                 similitary += (1 - distanceRate) * weight;
             }
             return similitary/totalSum;

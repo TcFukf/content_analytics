@@ -53,19 +53,11 @@ var arct = Testing.GetArtickes();
 
 var news = Testing.GetNews();
 Console.WriteLine("NEWS");
-LogTools.PrintIE(TextAnalyzer.TextSimilarity(news[1], scales, news).ToArray());
-LogTools.PrintIE(TextAnalyzer.TextSimilarity(news[1], mscales, news).ToArray());
-Console.WriteLine("ARCTICLES");
+LogTools.PrintIE(TextAnalyzer.TextSimilarity(news[0], scales, news).ToArray());
+LogTools.PrintIE(TextAnalyzer.TextSimilarity(news[0], mscales, news).ToArray());
+Console.WriteLine("ARTICLES");
+LogTools.PrintIE(TextAnalyzer.TextSimilarity(arct[0], scales, arct).ToArray());
 LogTools.PrintIE(TextAnalyzer.TextSimilarity(arct[0], mscales, arct).ToArray());
-Console.WriteLine();
-double[] sims = TextAnalyzer.TextSimilarity(arct[0], scales, arct).ToArray();
-for (int i = 0; i < arct.Length; i++)
-{
-    string str = $"{arct[i].Substring(0,20)} : {sims[i]}";
-    Console.WriteLine(str);
-
-}
-Console.WriteLine("END OF APP");
 static void CreateFreqDictsFromFiles(string currentDir, string bookPath, string ouotr, string[] files, Queue<Thread> threads, int threadCount)
 {
     foreach (var file in files)

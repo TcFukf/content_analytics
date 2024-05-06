@@ -26,7 +26,7 @@ namespace social_analytics.Bl.TextAnalytics.MathModel.Scales
             var gramm = morphAnalyzer.Parse(word).ToList().First();
             if (frequencySkye.GetKeyCount(word) == 0)
             {
-                Console.WriteLine($"NOT IN SKYE :{word}");
+                //Console.WriteLine($"NOT IN SKYE :{word}");
                 return 0;
             }
             if (gramm?.BestTag?.GramsDic["чр"] == "сущ")
