@@ -5,12 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace social_analytics.Bl.TextAnalytics
+namespace social_analytics.Bl.TextAnalytics.MathModel.Scales
 {
-    public class WordTagScales : ITagScales
+    public class FreqWordScales : ITagScales
     {
-        private readonly WordSkye frequencyDict;
-        public WordTagScales(WordSkye weighter)
+        private readonly FrequencySkye frequencyDict;
+        public FreqWordScales(FrequencySkye weighter)
         {
             frequencyDict = weighter;
         }
@@ -21,11 +21,11 @@ namespace social_analytics.Bl.TextAnalytics
 
         public double CalcWeight(string word)
         {
-            if (frequencyDict.GetKeyCount(word) == 0)
+            if( frequencyDict.GetKeyCount(word) == 0)
             {
                 return 0;
             }
-            return (1/frequencyDict.GetKeyFrequency(word) * word.Length );
+            return 1 / (frequencyDict.GetKeyFrequency(word)) * Math.Pow(word.Length, 1d);
         }
     }
 }

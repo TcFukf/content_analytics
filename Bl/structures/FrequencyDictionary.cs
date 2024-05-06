@@ -9,7 +9,7 @@ namespace social_analytics.Bl.structures
 {
     public class FrequencyDictionary<Tkey> : IFrequencyDictionary<Tkey>, IHavePlustOperation<FrequencyDictionary<Tkey>>
     {
-        public int TotalCount { get; private set; } = 0;
+        public long TotalCount { get; private set; } = 0;
         private Dictionary<Tkey, int> _dict;
         public FrequencyDictionary()
         {
@@ -66,6 +66,11 @@ namespace social_analytics.Bl.structures
                 _dict[key] = increment;
             }
             TotalCount += increment;
+        }
+        public void Clear()
+        {
+            _dict.Clear();
+            TotalCount = 0;
         }
         public override string ToString()
         {

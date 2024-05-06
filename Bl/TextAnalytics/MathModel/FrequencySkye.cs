@@ -4,19 +4,19 @@ using social_analytics.Bl.structures;
 using System.Collections;
 using System.Runtime.InteropServices.JavaScript;
 
-namespace social_analytics.Bl.TextAnalytics
+namespace social_analytics.Bl.TextAnalytics.MathModel
 {
     [JsonObject]
-    public class WordSkye : IFrequencyDictionary<string>
+    public class FrequencySkye : IFrequencyDictionary<string>
     {
         [JsonProperty]
         private IFrequencyDictionary<string> _freqDict;
 
         public IWordTransforamtor WordTranformator { get; private set; }
 
-        public int TotalCount => _freqDict?.TotalCount ?? 0;
+        public long TotalCount => _freqDict?.TotalCount ?? 0;
 
-        public WordSkye(IFrequencyDictionary<string> freqDict,IWordTransforamtor wordTransforamtor)
+        public FrequencySkye(IFrequencyDictionary<string> freqDict, IWordTransforamtor wordTransforamtor)
         {
             _freqDict = freqDict;
             WordTranformator = wordTransforamtor;
@@ -65,10 +65,10 @@ namespace social_analytics.Bl.TextAnalytics
         {
             return _freqDict.GetEnumerator();
         }
-        public void SaveWordsInFile(string fullPath)
+        public void SaveWordsInFile(string fullFILEPath)
         {
             string line = (_freqDict as FrequencyDictionary<string>).GetJsonDict();
-            using (Stream str = new FileStream(fullPath, FileMode.Create))
+            using (Stream str = new FileStream(fullFILEPath+".json", FileMode.Create))
             {
                 using (StreamWriter sw = new StreamWriter(str))
                 {
@@ -83,12 +83,17 @@ namespace social_analytics.Bl.TextAnalytics
                 using (StreamReader sw = new StreamReader(str))
                 {
                     string line = sw.ReadToEnd();
-                    var dictValues = JsonConvert.DeserializeObject<Dictionary<string,int>>(line);
+                    var dictValues = JsonConvert.DeserializeObject<Dictionary<string, int>>(line);
                     FrequencyDictionary<string> frequenctDict = new(dictValues);
                     _freqDict = frequenctDict;
                 }
             }
         }
+
+        public void Clear()
+        {
+            _freqDict.Clear();
+        }
     }
-    
+
 }

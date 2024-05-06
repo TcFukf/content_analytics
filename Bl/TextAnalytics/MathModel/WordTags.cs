@@ -4,19 +4,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using social_analytics.Bl.TextAnalytics.MathModel.Scales;
 using Telegram.Td.Api;
 
-namespace social_analytics.Bl.TextAnalytics
+namespace social_analytics.Bl.TextAnalytics.MathModel
 {
-    public class WordTags:IEnumerable
+    public class WordTags : IEnumerable
     {
         public int Length => _tags.Count;
         private List<string> _tags;
         private double _totalSum = 0d;
         private Dictionary<string, int> _hashIndexes = null;
-        public WordTags(IEnumerable<string> words, ITagScales scales, bool hashGetByKey )
+        public WordTags(IEnumerable<string> words, ITagScales scales, bool hashGetByKey)
         {
-            _tags = words.OrderBy(word => scales.CalcOrder(word)).DistinctBy(w=>w).Select(word=>word).ToList();
+            _tags = words.OrderBy(word => scales.CalcOrder(word)).DistinctBy(w => w).Select(word => word).ToList();
             if (hashGetByKey)
             {
                 HashGetByKey();
@@ -50,7 +51,7 @@ namespace social_analytics.Bl.TextAnalytics
         {
             if (_hashIndexes != null && _hashIndexes.ContainsKey(tagKey))
             {
-                return (tagKey,_hashIndexes[tagKey] );
+                return (tagKey, _hashIndexes[tagKey]);
             }
             for (int i = 0; i < _tags.Count; i++)
             {
@@ -69,7 +70,7 @@ namespace social_analytics.Bl.TextAnalytics
                 _hashIndexes = new();
                 for (int i = 0; i < _tags.Count; i++)
                 {
-                    _hashIndexes.Add(_tags[i],i); 
+                    _hashIndexes.Add(_tags[i], i);
                 }
             }
         }

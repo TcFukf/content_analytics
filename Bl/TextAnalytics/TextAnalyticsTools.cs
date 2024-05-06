@@ -5,14 +5,17 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using social_analytics.Bl.structures;
+using social_analytics.Bl.TextAnalytics.MathModel;
+using social_analytics.Bl.TextAnalytics.MathModel.Scales;
 using Telegram.Td.Api;
 using TelegramWrapper.Models;
 
 namespace social_analytics.Bl.TextAnalytics
 {
-    public class TextAnalytics
+    public static class TextAnalyticsTools
     {
         public static HashSet<string> StopWords { get; set; } = null;
+        public static int distanceAttenuationRate = 10;
         static public IFrequencyDictionary<string> GetFrequenctGraph(string[] words)
         {
             IFrequencyDictionary<string> freq = new FrequencyDictionary<string>();
@@ -37,6 +40,30 @@ namespace social_analytics.Bl.TextAnalytics
         static public IEnumerable<string> GetStringEntities(params string[] inputs)
         {
             return GetStringEntities(StopWords, inputs);
+        }
+        static public IEnumerable<List<string>> GetStringsFromFileByLines(string fullFilePath,string regexPatt = @"[а-яА-я]+[\-:]{0,1}[0-9]{0,3}")
+        {
+            List<string> buffer = new List<string>();
+            int bfSize = 20_000;
+            using (StreamReader sr = new(fullFilePath, TextFiles.EncodingDetector.DetectFileEncoding(fullFilePath)))
+            {
+                string line = sr.ReadLine();
+                while (line != null)
+                {
+                    string filtredString = ( string.Join(" ", Regex.Matches(line,regexPatt).Where(match => match.Success).Select(match=>match.Value) ) );
+                    if (!string.IsNullOrEmpty(filtredString))
+                    {
+                        buffer.Add(filtredString);
+                    }
+                    if (buffer.Count >= bfSize)
+                    {
+                        yield return buffer;
+                        buffer.Clear();
+                    }
+                    line = sr.ReadLine();
+                }
+                yield return buffer;
+            }
         }
         static public void UpdateFrequencyDict<T>(IFrequencyDictionary<T> inputFrequency, params T[] values)
         {
@@ -75,20 +102,6 @@ namespace social_analytics.Bl.TextAnalytics
                 }
             }
             return graphsDict;
-        }
-
-        static public Dictionary<string, (int position, double weight)> GetBasicTags(List<string> sortedTags, Func<string,double> weightCalc)
-        {
-            Dictionary<string, (int position, double weight)> tagsTable = new();
-            for (int i = 0; i < sortedTags.Count; i++)
-            {
-                string word = sortedTags[i];
-                if (!tagsTable.ContainsKey(word))
-                {
-                    tagsTable.Add(word, (i,weightCalc(word)) );
-                }
-            }
-            return tagsTable;
         }
         static public double CalculateTagsSimilarity(WordTags tagsTable, WordTags tags,ITagScales scales)
         {
@@ -129,7 +142,7 @@ namespace social_analytics.Bl.TextAnalytics
             {
                 throw new ArgumentException($"distance < 0 . eblan??");
             }
-            int attenuation = 1000;
+            int attenuation = maxDistance * distanceAttenuationRate;
             double a = Math.Log(maxDistance,maxDistance+attenuation);
             double rate = distance / Math.Pow(distance+attenuation,a);
             return rate;

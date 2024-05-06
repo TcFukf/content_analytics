@@ -1,4 +1,4 @@
-﻿namespace social_analytics.Bl.TextAnalytics
+﻿namespace social_analytics.Bl.TextAnalytics.MathModel.Scales
 {
     public interface ITagScales
     {

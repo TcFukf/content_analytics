@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using social_analytics.Bl.TextAnalytics.MathModel;
 
-namespace social_analytics.Bl.TextAnalytics.WordTransformers
+namespace social_analytics.Bl.TextAnalytics.MathModel.WordTransformers
 {
     public class PorterTransformator : IWordTransforamtor
     {
