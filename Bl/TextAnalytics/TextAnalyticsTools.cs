@@ -103,6 +103,10 @@ namespace social_analytics.Bl.TextAnalytics
             }
             return graphsDict;
         }
+        // чтобы алгоритм работал правильно нужно чтобы WordTags(вектор получается) был унифицирован -
+        // все елементы отображены на множ-во как у scales ведь они и так от него зависимы(слова сортируются им)
+        // А СЕЙЧАС ПОДРАЗУМЕВАЮТСЯ ТО ОТОБРАЖЕНИЯ А ИСПОЛЬЗУЮТСЯ ИСХОДНЫЕ СЛОВА.
+        // вся я хаватььбюв
         static public double CalculateTagsSimilarity(WordTags tagsTable, WordTags tags,ITagScales scales)
         {
             int maxDistance = Math.Max(tagsTable.Length, tags.Length);
