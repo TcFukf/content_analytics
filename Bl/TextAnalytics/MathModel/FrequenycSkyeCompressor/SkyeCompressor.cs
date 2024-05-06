@@ -1,9 +1,12 @@
-﻿using social_analytics.Bl.TextAnalytics.MathModel;
+﻿using social_analytics.Bl.structures;
+using social_analytics.Bl.TextAnalytics.MathModel;
 
-internal class SkyeCompressor
+public class SkyeCompressor
 {
-    internal void Compress(FrequencySkye freqSk)
+    public IFrequencyDictionary<string> Compress()
     {
-        throw new NotImplementedException();
+        Dictionary<string, int> compressed = new();
+
+        return null;
     }
 }

@@ -31,11 +31,33 @@ IClientWrapper tg = new TelegramClient(
                                        TelegramWrapper.Helpers.ConfigHelper.ApiHash,
                                        new ContextManager()
                                        );
-FrequencySkye freqSk = new(new FrequencyDictionary<string>(), new PorterTransformator());
-SkyeCompressor comp = new();
-comp.Compress(freqSk);
+
+string currentDir = Directory.GetCurrentDirectory();
+string bigFilePath = "\\books\\wiki\\";
+string bookPath = "\\freqDict\\";
+string ouotr = "outWiki";
+string dirPath = currentDir + bookPath+ "\\outWiki\\"; 
 
 
+Dictionary<string, int> totalDict = new();
+
+var freqDict = new FrequencyDictionary<string>(totalDict);
+
+var freqSkye = new FrequencySkye(freqDict, new PorterTransformator());
+
+freqSkye.LoadWordsFromFile(currentDir+bookPath+"allwiki.json");
+var scales = new FreqWordScales(freqSkye);
+var mscales = new MorphTagScales(freqSkye,new MorphAnalyzer(withLemmatization:true));
+Console.WriteLine();
+var arct = Testing.GetArtickes();
+LogTools.PrintIE(TextAnalyzer.TextSimilarity(arct[4], scales, arct).ToArray());
+double[] sims = TextAnalyzer.TextSimilarity(arct[4], mscales, arct).ToArray();
+for (int i = 0; i < arct.Length; i++)
+{
+    string str = $"{arct[i].Substring(0,20)} : {sims[i]}";
+    Console.WriteLine(str);
+
+}
 Console.WriteLine("END OF APP");
 static void CreateFreqDictsFromFiles(string currentDir, string bookPath, string ouotr, string[] files, Queue<Thread> threads, int threadCount)
 {

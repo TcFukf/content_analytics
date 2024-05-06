@@ -49,9 +49,13 @@ namespace social_analytics.Bl.TextAnalytics.MathModel
 
         public (string tagKey, int tagPosition)? GetByKey(string tagKey)
         {
-            if (_hashIndexes != null && _hashIndexes.ContainsKey(tagKey))
+            if (_hashIndexes != null)
             {
-                return (tagKey, _hashIndexes[tagKey]);
+                if (_hashIndexes.ContainsKey(tagKey))
+                {
+                    return (tagKey, _hashIndexes[tagKey]);
+                }
+                return null;
             }
             for (int i = 0; i < _tags.Count; i++)
             {
