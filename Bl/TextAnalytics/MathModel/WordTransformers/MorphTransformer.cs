@@ -1,5 +1,4 @@
 ﻿using DeepMorphy;
-using social_analytics.Bl.TextAnalytics.MathModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;

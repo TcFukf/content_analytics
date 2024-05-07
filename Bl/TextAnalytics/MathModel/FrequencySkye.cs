@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using social_analytics.Bl.structures;
+using social_analytics.Bl.TextAnalytics.MathModel.WordTransformers;
 using System.Collections;
 using System.Runtime.InteropServices.JavaScript;
 
