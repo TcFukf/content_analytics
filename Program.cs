@@ -42,21 +42,23 @@ MessagesBL msg = new MessagesBL(new Parser(tg),new MessageDAL());
 var options = new MessageSearchOptions() 
                         { DateOptions = new DateOptions()
                                         { 
-                                            FromDate = DateTime.UtcNow.Date.AddDays(-5),
+                                            FromDate = DateTime.UtcNow.Date.AddDays(-6),
                                             TillDate = DateTime.UtcNow.Date
                             
                                         },
-                         SimilarityOptions = new SimilarityOptions() { SimilarityWords = new string[] {"крокус"} }
+                         SimilarityOptions = null//new SimilarityOptions() { SimilarityWords = new string[] {"крокус"} }
                         };
 var messages =  msg.SearchMessages(options).Result.Where(m=>m.Text?.Length > 1).ToArray();
-var news = messages.Where(msg=>msg.Text?.Length > 100).First();
+var news = messages.Where(msg=>msg.MessageId == 110328020992 ).First();
 
 var freqSkye = new FrequencySkye(new FrequencyDictionary<string>(), new PorterTransformator());
 freqSkye.LoadWordsFromFile(currentDir+bookPath+"allwiki.json");
 var textAnalyzer = new TextAnalyzer(new FreqWordScales(freqSkye));
 
 int i = 0;
-var newsRates = textAnalyzer.TextSimilarity(news.Text,messages.Select(msg=>msg.Text));
+var newsRates = textAnalyzer.TextSimilarity(news.Text,50,messages.Select(msg=>msg.Text).ToArray());
+//var newsRates = textAnalyzer.TextSimilarity(Testing.GetNews()[0], 100, Testing.GetNews()[1]);
+
 List<(string,double)> rates = new();
 foreach (var rate in newsRates)
 {
@@ -64,7 +66,7 @@ foreach (var rate in newsRates)
     {
 
     }
-    rates.Add((messages[i].Text,rate));
+    rates.Add((messages[i].Text.Substring(0, Math.Min(100, messages[i].Text.Length-1)),rate));
     i++;
 }
 rates = rates.OrderBy(rate => rate.Item2).ToList();

@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using social_analytics.Bl.structures;
-using social_analytics.Bl.TextAnalytics.MathModel;
 using social_analytics.Bl.TextAnalytics.MathModel.Scales;
+using social_analytics.Bl.TextAnalytics.MathModel.WordVectorModel;
 using Telegram.Td.Api;
 using TelegramWrapper.Models;
 
@@ -103,65 +105,90 @@ namespace social_analytics.Bl.TextAnalytics
             }
             return graphsDict;
         }
-        //1) чтобы алгоритм работал правильно нужно чтобы WordTags(вектор получается) был унифицирован -
-        // все елементы отображены на множ-во как у scales ведь они и так от него зависимы(слова сортируются им)
-        // А СЕЙЧАС ПОДРАЗУМЕВАЮТСЯ ТО ОТОБРАЖЕНИЯ А ИСПОЛЬЗУЮТСЯ ИСХОДНЫЕ СЛОВА.
-        // вся я хаватььбюв
-        // 2)МБ УБРАТЬ DI ОТ SCALES И ОСТАВИТЬ ТОКА ВЕКТОРЫ И ЛОГИКУ КАК ИХ СРАВНИВАТЬ
 
-        // 3)ВЕКТОР ТЕГОВ ДОЛЖЕН 1:ОТОБРОЖАТЬ ВСЕ СЛОВА ОДИНАКОВО 2:  РАНЖИРОВАТЬ ОДИНАКОВО. 3:если отображение встреч 2жды оставляет (ПОКА что) только 1
-        // СЕЙЧАС СРАВНИВАЕТ  ТЕГИ У ОДНОГО ВЕКТОРА  И CalculateTagsSimilarity(L,R) != CalculateTagsSimilarity(R,L) думать нужно ли это
-
-        // ps.ИЗ ЗА ТОГО ЧТО ТЕГОВ МНОГО ДАЖЕ ЕСЛИ ТЕКСТЫ СОДЕРЖАТ ВАЖНОЕ СЛОВО ЕГО ВЕС МАЛ ДЛЯ БОЛЬШИХ ТЕКСТОВ И мУСОРНЫЕ СЛОВА ПЕРЕБИВАЮТ СХОДСТВО
-
-        // 4)СДЕЛАТЬ double totalSum = tagsTable.TotalSum(scales); ШОБЫ ВЕС ПРИБАВЛЯЛСЯ МЕНЬШЕ ЕСЛИ В КОНЦЕ СПИСКА НАХОДИТСЯ
-        // ЭТА ЛОГИКА ДОЛЖНА БЫТЬ ЗАЛОЖЕНЫ В КЛАСС WordTags ТАК КАК я считаю ЭТА ТАКОЙ СМЫСЛ ХАРАКТЕРИСТИКИ СЛОВА
-        // ыыыыыыыыыы ну епт даже 1. и 2. к этому ведут
-        static public double CalculateTagsSimilarity(WordTags tagsTable, WordTags tags,ITagScales scales)
+        static public double TagsSimilarity(double weightTagA1,double weightTagA2, double rarety = 0)
         {
-            int maxDistance = Math.Max(tagsTable.Length, tags.Length);
-            double similitary = 0;
-            double totalSum = tagsTable.TotalSum(scales);
-            
-            for (int i = 0; i < tags.Length; i++)
+            double distance = Math.Abs(weightTagA2 - weightTagA1);
+            return Math.Min(weightTagA1,weightTagA2)/( Math.Max(weightTagA1, weightTagA2) - distance * RaretyBalancer(rarety)  );
+        }
+        static public double SimilarityWeightOfTheTagGroup(double tagsSimilarity, double weightTagsGroup)
+        {
+            return tagsSimilarity * weightTagsGroup;
+        }
+        static public double TagsVectorSimilarity(IEnumerable< (double tagAW1,double tagAW2, double tagsGroupWeight) > tags)
+        {
+            double totalSum = 0;
+            double similaritySum = 0;
+            foreach (var tag in tags)
             {
-                (string tagKey, int tagPosition) tag = tags.GetByIndex(i);
-                double distance = maxDistance;
-                double weight = 0;
-
-                (string tagKey, int tagPosition)? basicTag = tagsTable.GetByKey(tag.tagKey);
-                if (basicTag.HasValue)
-                {
-                    distance = Math.Abs(basicTag.Value.tagPosition - tag.tagPosition);
-                    weight = scales.CalcWeight(basicTag.Value.tagKey);
-                }
-                //double distanceRate = CalcDistanceСoefficient(distance, maxDistance);
-                double distanceRate = 0;
-                similitary += (1 - distanceRate) * weight;
+                totalSum += tag.tagsGroupWeight;
+                similaritySum = SimilarityWeightOfTheTagGroup(TagsSimilarity(tag.tagAW1, tag.tagAW2,tag.tagsGroupWeight), tag.tagsGroupWeight);
             }
-            return similitary/totalSum;
+            return  similaritySum/totalSum;
         }
         /// <summary>
-        /// при |basPos - tagPos| = 0 -> 0
-        /// при |basPos - tagPos| >= maxDistance -> 1 и больше соотв
+        /// its 1>= F(x) >=0 ,x->maxDist , F(x)->0
+        /// monot slowly decreasing function
         /// </summary>
         /// <param name="basicPosition"></param>
         /// <param name="tagPosition"></param>
         /// <param name="maxDistance"></param>
         /// <returns></returns>
-        private static double CalcDistanceСoefficient(double distance,int maxDistance)
+        ///
+        public static double SlowDecreasingRate(double distance,int maxDistance)
         {
-            // чем БОЛЬШЕ attenuation  тем  ДОЛЬШЕ растет коэффицент.
-            // когда distance >= maxDistance коээфицент >= 1( вес * (1-1) = 0) , и вот чем : больше attenuation тем больше веса получаем  при тойже дистании  
             if (distance < 0)
             {
-                throw new ArgumentException($"distance < 0 . eblan??");
+                throw new ArgumentException($"distance < 0 . genius??");
             }
-            int attenuation = maxDistance * distanceAttenuationRate;
-            double a = Math.Log(maxDistance,maxDistance+attenuation);
-            double rate = distance / Math.Pow(distance+attenuation,a);
+            double rate =  1 - distance/maxDistance;
             return rate;
 
+        }
+
+        /// <summary>
+        ///0<=F(x)<=1 . F(x) -> 1 if Wg->1 and versa
+        /// </summary>
+        /// <param name="WG"></param>
+        /// <param name="dist"></param>
+        /// <returns></returns>
+        ///
+        public static double RaretyBalancer(double raretyWeight,double dist = 2)
+        {
+            /// подумать все ли тут ок.....
+            // в точке rarety/dist функция = 0.9 , менять увелич dist если нужно d0*F(rarety,d0) > d1*W(rarety,d1) if d0 > d1 
+            double k = 1;
+            if (raretyWeight > 0)
+            {
+                k = (10-1) * dist / raretyWeight;
+            }
+            return 1 - 1 / (k*raretyWeight+1);
+        }
+
+        private static IEnumerable<KeyValuePair<string,Tag>> GetSmallestVector(WordTagsVector left, WordTagsVector right)
+        {
+            if (right.Length > left.Length)
+            {
+                return left;
+            }
+            return right;
+        }
+        public static double CalculateTagsSimilarity(WordTagsVector mainVector, WordTagsVector tagVector)
+        {
+            double totalSimSum = 0;
+            double simSum = 0;
+            foreach (var tag in GetSmallestVector(mainVector,tagVector))
+            {
+                totalSimSum += tag.Value.GroupTagWeight;
+                double weight = tagVector.GetByKey(tag.Key)?.TagWeight ?? 0;
+                if (weight == 0)
+                {
+                    continue;
+                }
+                double similit = TagsSimilarity(tag.Value.TagWeight, weight);
+                simSum += similit* tag.Value.GroupTagWeight;
+            }
+            return simSum / totalSimSum;
         }
     }
 

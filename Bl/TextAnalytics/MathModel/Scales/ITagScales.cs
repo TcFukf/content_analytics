@@ -4,6 +4,6 @@
     {
         double CalcWeight(string word);
         double CalcOrder(string word);
-        string GetForm(string word);
+        string GetScalse(string word);
     }
 }

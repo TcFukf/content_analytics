@@ -36,7 +36,7 @@ namespace social_analytics.Bl.TextAnalytics.MathModel.Scales
             return 1 / (frequencySkye.GetKeyFrequency(word)) * Math.Pow(word.Length, 1d) ;
         }
 
-        public string GetForm(string word)
+        public string GetScalse(string word)
         {
             return frequencySkye.WordTranformator.TransformWord(word);
         }

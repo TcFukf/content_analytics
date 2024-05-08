@@ -29,7 +29,7 @@ namespace social_analytics.Bl.TextAnalytics.MathModel.Scales
             return 1 / (frequencyDict.GetKeyFrequency(word)) * Math.Pow(word.Length, 1d);
         }
 
-        public string GetForm(string word)
+        public string GetScalse(string word)
         {
             return frequencyDict.WordTranformator.TransformWord(word);
         }
