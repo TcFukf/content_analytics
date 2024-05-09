@@ -175,9 +175,16 @@ namespace social_analytics.Bl.TextAnalytics
         }
         public static double CalculateTagsSimilarity(WordTagsVector mainVector, WordTagsVector tagVector)
         {
+            throw new Exception("думой как лучше сделать шобы весы считало и выполнялась пермутативность");
+            // if V1[A1,B1,C1] , V2[A2,D1] - пройтись по обьединению множеств и тогда перестановки работают
+            // или правильней посчитать сумму обьединений через разность(сумму/) Vector1.TotalSum + Vector2.TotalSum  - intersectWeight(тут оно и считается вроде)
+            if (mainVector.Length > tagVector.Length)
+            {
+                return (CalculateTagsSimilarity(tagVector, mainVector));
+            }
             double totalSimSum = 0;
             double simSum = 0;
-            foreach (var tag in GetSmallestVector(mainVector,tagVector))
+            foreach (var tag in mainVector)
             {
                 totalSimSum += tag.Value.GroupTagWeight;
                 double weight = tagVector.GetByKey(tag.Key)?.TagWeight ?? 0;
@@ -185,7 +192,7 @@ namespace social_analytics.Bl.TextAnalytics
                 {
                     continue;
                 }
-                double similit = TagsSimilarity(tag.Value.TagWeight, weight);
+                double similit = TagsSimilarity(tag.Value.TagWeight, weight,tag.Value.GroupTagWeight);
                 simSum += similit* tag.Value.GroupTagWeight;
             }
             return simSum / totalSimSum;

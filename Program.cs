@@ -42,7 +42,7 @@ MessagesBL msg = new MessagesBL(new Parser(tg),new MessageDAL());
 var options = new MessageSearchOptions() 
                         { DateOptions = new DateOptions()
                                         { 
-                                            FromDate = DateTime.UtcNow.Date.AddDays(-6),
+                                            FromDate = DateTime.UtcNow.Date.AddDays(-7),
                                             TillDate = DateTime.UtcNow.Date
                             
                                         },
@@ -56,7 +56,7 @@ freqSkye.LoadWordsFromFile(currentDir+bookPath+"allwiki.json");
 var textAnalyzer = new TextAnalyzer(new FreqWordScales(freqSkye));
 
 int i = 0;
-var newsRates = textAnalyzer.TextSimilarity(news.Text,50,messages.Select(msg=>msg.Text).ToArray());
+var newsRates = textAnalyzer.TextSimilarity(news.Text,100,messages.Select(msg=>msg.Text).ToArray());
 //var newsRates = textAnalyzer.TextSimilarity(Testing.GetNews()[0], 100, Testing.GetNews()[1]);
 
 List<(string,double)> rates = new();
@@ -69,7 +69,7 @@ foreach (var rate in newsRates)
     rates.Add((messages[i].Text.Substring(0, Math.Min(100, messages[i].Text.Length-1)),rate));
     i++;
 }
-rates = rates.OrderBy(rate => rate.Item2).ToList();
+rates = rates.Where(rate=>rate.Item2>0.05d).OrderBy(rate => rate.Item2).ToList();
 LogTools.PrintIE(rates,sep:"\n\n\n" );
 
 static void CreateFreqDictsFromFiles(string currentDir, string bookPath, string ouotr, string[] files, Queue<Thread> threads, int threadCount)
