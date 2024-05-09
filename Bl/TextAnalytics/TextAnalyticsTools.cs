@@ -2,15 +2,9 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Numerics;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using social_analytics.Bl.structures;
-using social_analytics.Bl.TextAnalytics.MathModel.Scales;
 using social_analytics.Bl.TextAnalytics.MathModel.WordVectorModel;
-using Telegram.Td.Api;
-using TelegramWrapper.Models;
 
 namespace social_analytics.Bl.TextAnalytics
 {
@@ -115,17 +109,6 @@ namespace social_analytics.Bl.TextAnalytics
         {
             return tagsSimilarity * weightTagsGroup;
         }
-        static public double TagsVectorSimilarity(IEnumerable< (double tagAW1,double tagAW2, double tagsGroupWeight) > tags)
-        {
-            double totalSum = 0;
-            double similaritySum = 0;
-            foreach (var tag in tags)
-            {
-                totalSum += tag.tagsGroupWeight;
-                similaritySum = SimilarityWeightOfTheTagGroup(TagsSimilarity(tag.tagAW1, tag.tagAW2,tag.tagsGroupWeight), tag.tagsGroupWeight);
-            }
-            return  similaritySum/totalSum;
-        }
         /// <summary>
         /// its 1>= F(x) >=0 ,x->maxDist , F(x)->0
         /// monot slowly decreasing function
@@ -173,29 +156,28 @@ namespace social_analytics.Bl.TextAnalytics
             }
             return right;
         }
-        public static double CalculateTagsSimilarity(WordTagsVector mainVector, WordTagsVector tagVector)
+        public static double CalculateVectorsSimilarity(WordTagsVector mainVector, WordTagsVector tagVector)
         {
-            throw new Exception("думой как лучше сделать шобы весы считало и выполнялась пермутативность");
+            //throw new Exception("думой как лучше сделать шобы весы считало и выполнялась пермутативность");
             // if V1[A1,B1,C1] , V2[A2,D1] - пройтись по обьединению множеств и тогда перестановки работают
-            // или правильней посчитать сумму обьединений через разность(сумму/) Vector1.TotalSum + Vector2.TotalSum  - intersectWeight(тут оно и считается вроде)
+            // или правильней посчитать сумму обьединений через  Vector1.TotalSum + Vector2.TotalSum  - intersectWeight(тут оно и считается вроде)
+
             if (mainVector.Length > tagVector.Length)
             {
-                return (CalculateTagsSimilarity(tagVector, mainVector));
+                return CalculateVectorsSimilarity(tagVector,mainVector);
             }
-            double totalSimSum = 0;
-            double simSum = 0;
+            double intersectWeight = 0;
             foreach (var tag in mainVector)
             {
-                totalSimSum += tag.Value.GroupTagWeight;
-                double weight = tagVector.GetByKey(tag.Key)?.TagWeight ?? 0;
-                if (weight == 0)
+                Tag groupTag = tagVector.GetByKey(tag.Key);
+                if (groupTag != null)
                 {
-                    continue;
+                    double similarity = TagsSimilarity(tag.Value.TagWeight, groupTag.TagWeight, groupTag.GroupTagWeight);
+                    intersectWeight += groupTag.GroupTagWeight*similarity;
                 }
-                double similit = TagsSimilarity(tag.Value.TagWeight, weight,tag.Value.GroupTagWeight);
-                simSum += similit* tag.Value.GroupTagWeight;
             }
-            return simSum / totalSimSum;
+            return intersectWeight / (mainVector.GroupSumTagsOfVector + tagVector.GroupSumTagsOfVector - intersectWeight);
+            // sim = Sum( intersecr(WABS and WAD.. ) ) / (main.Vect + tag.Vect - intersect() )
         }
     }
 

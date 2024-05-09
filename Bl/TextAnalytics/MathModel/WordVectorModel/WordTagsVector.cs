@@ -14,6 +14,8 @@ namespace social_analytics.Bl.TextAnalytics.MathModel.WordVectorModel
     public class WordTagsVector:IEnumerable<KeyValuePair<string,Tag>>
     {
         private Dictionary<string, Tag> _tagsWeights = new();
+        private double _groupSumTagsOfVector;
+        public double GroupSumTagsOfVector { get; private set; }
         public int Length => _tagsWeights.Count;
 
         // представляет cлово как набор отсортированных слов , отображенных на слова в частотном словаре**
@@ -44,6 +46,7 @@ namespace social_analytics.Bl.TextAnalytics.MathModel.WordVectorModel
                 else
                 {
                     _tagsWeights.Add(tagKey, new Tag() { TagWeight = weight,GroupTagWeight = groupWeight});
+                    GroupSumTagsOfVector += groupWeight;
                 }
             }
         }

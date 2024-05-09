@@ -23,7 +23,7 @@ namespace social_analytics.Bl.TextAnalytics.TextAnalyzer.TextAnalyzer
             int comprCount = (int)(words.Length * persentOfText / (double)100);
             WordTagsVector mainVector = new WordTagsVector(frequenctDictScaler,numberOfBest:comprCount ,words);
             IEnumerable<WordTagsVector> tags = texts.Select(text => new WordTagsVector(frequenctDictScaler,numberOfBest:comprCount, TextAnalyticsTools.GetStringEntities(text).ToArray()));
-            return tags.Select(tag => TextAnalyticsTools.CalculateTagsSimilarity(mainVector, tag));
+            return tags.Select(tag => TextAnalyticsTools.CalculateVectorsSimilarity(mainVector, tag));
         }
     }
 }

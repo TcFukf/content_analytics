@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Telegram.Td.Api;
 
 namespace social_analytics.Bl.TextAnalytics.MathModel.Scales
 {
@@ -16,17 +17,18 @@ namespace social_analytics.Bl.TextAnalytics.MathModel.Scales
         }
         public double CalcOrder(string word)
         {
-            return frequencyDict.GetKeyFrequency(word);
+            return CalcWeight(word);
         }
 
         public double CalcWeight(string word)
         {
             if( frequencyDict.GetKeyCount(word) == 0)
             {
-                //Console.WriteLine($"defScales* NOT IN SKYE :{word}");
                 return 0;
             }
-            return 1 / (frequencyDict.GetKeyFrequency(word)) * Math.Pow(word.Length, 1d);
+            // 1/keyFreq too big
+            double weight = (1 / frequencyDict.GetKeyFrequency(word) ) * Math.Pow(word.Length, 1d);
+            return weight/100_000_000;
         }
 
         public string GetScalse(string word)

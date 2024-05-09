@@ -42,35 +42,29 @@ MessagesBL msg = new MessagesBL(new Parser(tg),new MessageDAL());
 var options = new MessageSearchOptions() 
                         { DateOptions = new DateOptions()
                                         { 
-                                            FromDate = DateTime.UtcNow.Date.AddDays(-7),
+                                            FromDate = DateTime.UtcNow.Date.AddDays(-30),
                                             TillDate = DateTime.UtcNow.Date
                             
                                         },
                          SimilarityOptions = null//new SimilarityOptions() { SimilarityWords = new string[] {"крокус"} }
                         };
 var messages =  msg.SearchMessages(options).Result.Where(m=>m.Text?.Length > 1).ToArray();
-var news = messages.Where(msg=>msg.MessageId == 110328020992 ).First();
+var post = messages.Where(msg=>msg.MessageId == 110328020992 ).First();
 
 var freqSkye = new FrequencySkye(new FrequencyDictionary<string>(), new PorterTransformator());
 freqSkye.LoadWordsFromFile(currentDir+bookPath+"allwiki.json");
 var textAnalyzer = new TextAnalyzer(new FreqWordScales(freqSkye));
 
-int i = 0;
-var newsRates = textAnalyzer.TextSimilarity(news.Text,100,messages.Select(msg=>msg.Text).ToArray());
-//var newsRates = textAnalyzer.TextSimilarity(Testing.GetNews()[0], 100, Testing.GetNews()[1]);
+var news = Testing.GetNews();
+var arcticles = Testing.GetArtickes();
 
-List<(string,double)> rates = new();
-foreach (var rate in newsRates)
+var results = textAnalyzer.TextSimilarity(post.Text, 100, messages.Select(m=>m.Text).ToArray()).ToArray();
+(long,double)[] res = new (long, double)[results.Length] ;
+for (int i = 0; i < results.Length; i++)
 {
-    if (rate*100 > 20)
-    {
-
-    }
-    rates.Add((messages[i].Text.Substring(0, Math.Min(100, messages[i].Text.Length-1)),rate));
-    i++;
+    res[i] = (messages[i].MessageId, results[i]);
 }
-rates = rates.Where(rate=>rate.Item2>0.05d).OrderBy(rate => rate.Item2).ToList();
-LogTools.PrintIE(rates,sep:"\n\n\n" );
+LogTools.PrintIE(res.OrderBy(t=>t.Item2));
 
 static void CreateFreqDictsFromFiles(string currentDir, string bookPath, string ouotr, string[] files, Queue<Thread> threads, int threadCount)
 {
