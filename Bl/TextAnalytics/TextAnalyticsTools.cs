@@ -21,21 +21,21 @@ namespace social_analytics.Bl.TextAnalytics
             }
             return freq;
         }
-        static public IEnumerable<string> GetStringEntities(HashSet<string> ignoreWords = null, params string[] inputs)
+        static public IEnumerable<string> GetWordsFromStrings(HashSet<string> ignoreWords = null, params string[] inputs)
         {
             List<string> output = new(inputs.Length);
             foreach (var input in inputs)
             {
                 if (!string.IsNullOrEmpty(input))
                 {
-                    output.AddRange(Regex.Matches(input, @"[\w]+").Where(m => ignoreWords == null || !ignoreWords.Contains(m.Value)).Select(match => match.Value.ToLower()));
+                    output.AddRange(Regex.Matches(input, @"[а-яА-Я]+").Where(m => ignoreWords == null || !ignoreWords.Contains(m.Value)).Select(match => match.Value.ToLower()));
                 }
             }
             return output;
         }
-        static public IEnumerable<string> GetStringEntities(params string[] inputs)
+        static public IEnumerable<string> GetWordsFromStrings(params string[] inputs)
         {
-            return GetStringEntities(StopWords, inputs);
+            return GetWordsFromStrings(StopWords, inputs);
         }
         static public IEnumerable<List<string>> GetStringsFromFileByLines(string fullFilePath,string regexPatt = @"[а-яА-я]+[\-:]{0,1}[0-9]{0,3}")
         {
@@ -61,9 +61,9 @@ namespace social_analytics.Bl.TextAnalytics
                 yield return buffer;
             }
         }
-        static public void UpdateFrequencyDict<T>(IFrequencyDictionary<T> inputFrequency, params T[] values)
+        static public void UpdateFrequencyDict<T>(IFrequencyDictionary<T> inputFrequency, params T[] dictItems)
         {
-            foreach (var input in values)
+            foreach (var input in dictItems)
             {
                 inputFrequency.AddFrequency(input, 1);
             }}
@@ -120,6 +120,7 @@ namespace social_analytics.Bl.TextAnalytics
         ///
         public static double SlowDecreasingRate(double distance,int maxDistance)
         {
+            return 1;
             if (distance < 0)
             {
                 throw new ArgumentException($"distance < 0 . genius??");

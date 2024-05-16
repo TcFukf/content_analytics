@@ -19,7 +19,7 @@ namespace social_analytics.Bl.TextAnalytics.TextFiles
                 {
                     foreach (var lines in TextAnalyticsTools.GetStringsFromFileByLines(inputFilePath))
                     {
-                        bookSkye.UpdateFrequencies(TextAnalyticsTools.GetStringEntities(lines.ToArray()));
+                        bookSkye.UpdateFrequencies(TextAnalyticsTools.GetWordsFromStrings(lines.ToArray()));
                     }
                     bookSkye.SaveWordsInFile(outputFileFullPath);
                 }

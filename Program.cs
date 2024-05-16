@@ -1,70 +1,60 @@
 ﻿
 
+using social_analytics;
+using social_analytics.Bl.BotServer;
 using social_analytics.Bl.Filter;
 using social_analytics.Bl.Messages;
+using social_analytics.Bl.structures;
 using social_analytics.Bl.TextAnalytics;
+using social_analytics.Bl.TextAnalytics.MathModel;
+using social_analytics.Bl.TextAnalytics.MathModel.Scales;
+using social_analytics.Bl.TextAnalytics.MathModel.WordTransformers;
+using social_analytics.Bl.TextAnalytics.MathModel.WordVectorModel;
+using social_analytics.Bl.TextAnalytics.TextAnalyzer.TextAnalyzer;
+using social_analytics.Bl.TextAnalytics.TextFiles;
 using social_analytics.DAL;
+using social_analytics.Helpers;
+using System.Data.Common;
+using Telegram.Td.Api;
 using TelegramWrapper.Models;
-using DeepMorphy;
 using TelegramWrapper.TelegramParser;
 using TelegramWrapper.Wrapper;
 using TelegramWrapper.Wrapper.Bl;
-using System.Text.Encodings.Web;
-using System.Text.Json;
-using TelegramWrapper.DAL;
-using Telegram.Td.Api;
-using social_analytics.Helpers;
-using social_analytics.Bl.structures;
-using social_analytics;
-using DeepMorphy.Model;
-using social_analytics.Bl.TextAnalytics.MathModel;
-using social_analytics.Bl.TextAnalytics.TextAnalyzer.TextAnalyzer;
-using social_analytics.Bl.TextAnalytics.MathModel.Scales;
-using social_analytics.Bl.TextAnalytics.MathModel.WordTransformers;
-using social_analytics.Bl.TextAnalytics.TextFiles;
-using System.Collections;
-using System.Xml;
 
 
 
 string currentDir = Directory.GetCurrentDirectory();
 string bigFilePath = "\\books\\wiki\\";
-string bookPath = "\\freqDict\\";
-
+string freqDictPath = "\\freqDict\\";
+var contextManager = new ContextManager();
 IClientWrapper tg = new TelegramClient(
                                        TelegramWrapper.Helpers.ConfigHelper.ApiId,
                                        TelegramWrapper.Helpers.ConfigHelper.ApiHash,
-                                       new ContextManager()
+                                       contextManager
                                        );
+
+MessagesService msgService = new MessagesService(new Parser(tg), new MessageDAL());
+
+FrequencySkye freqSkye = new FrequencySkye(new FrequencyDictionary<string>(),new PorterTransformator());
+freqSkye.LoadWordsFromJsonFile("./"+freqDictPath+ "newsfromRepo(~130k).json");
+ITagScales scales = new FreqWordScales(freqSkye);
+TextAnalyzer textAnalyzer = new(scales);
+
+
+
 tg.InitAndWaitAuthorize();
-MessagesBL msg = new MessagesBL(new Parser(tg),new MessageDAL());
-
-var options = new MessageSearchOptions() 
-                        { DateOptions = new DateOptions()
-                                        { 
-                                            FromDate = DateTime.UtcNow.Date.AddDays(-30),
-                                            TillDate = DateTime.UtcNow.Date
-                            
-                                        },
-                         SimilarityOptions = null//new SimilarityOptions() { SimilarityWords = new string[] {"крокус"} }
-                        };
-var messages =  msg.SearchMessages(options).Result.Where(m=>m.Text?.Length > 1).ToArray();
-var post = messages.Where(msg=>msg.MessageId == 110328020992 ).First();
-
-var freqSkye = new FrequencySkye(new FrequencyDictionary<string>(), new PorterTransformator());
-freqSkye.LoadWordsFromFile(currentDir+bookPath+"allwiki.json");
-var textAnalyzer = new TextAnalyzer(new FreqWordScales(freqSkye));
-
-var news = Testing.GetNews();
-var arcticles = Testing.GetArtickes();
-
-var results = textAnalyzer.TextSimilarity(post.Text, 100, messages.Select(m=>m.Text).ToArray()).ToArray();
-(long,double)[] res = new (long, double)[results.Length] ;
-for (int i = 0; i < results.Length; i++)
+List<IChatContext> serviceChats = new();
+foreach (var chat in tg.GetNotPrivateChats().Result)
 {
-    res[i] = (messages[i].MessageId, results[i]);
+    serviceChats.Add( tg.GetOrCreateChatContextWith(chat.Id) );
 }
-LogTools.PrintIE(res.OrderBy(t=>t.Item2));
+
+
+ClientServer tgServer = new ClientServer(msgService,textAnalyzer,tg);
+Console.WriteLine("START LISTENING");
+tgServer.ListenRequests().Wait();
+
+
 
 static void CreateFreqDictsFromFiles(string currentDir, string bookPath, string ouotr, string[] files, Queue<Thread> threads, int threadCount)
 {
@@ -98,6 +88,17 @@ static void CreateFreqDictsFromFiles(string currentDir, string bookPath, string 
         Console.WriteLine("running");
         Thread.Sleep(60_000);
     }
+}
+
+static void ShowSimilarities(TextAnalyzer textAnalyzer, MessageModel[] messages, MessageModel post)
+{
+    var results = textAnalyzer.TextSimilarity(post.Text, 100, messages.Select(mg=>mg.Text).ToArray()).ToArray();
+    ((long, long), double)[] res = new ((long, long), double)[results.Length];
+    for (int i = 0; i < results.Length; i++)
+    {
+        res[i] = ((messages[i].MessageId, messages[i].ChatId ), results[i]);
+    }
+    LogTools.PrintIE(res.OrderBy(t => t.Item2));
 }
 
 //(и, 3697, 4213776596757),

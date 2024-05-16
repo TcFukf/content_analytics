@@ -15,9 +15,14 @@ namespace social_analytics.Bl.TextAnalytics.MathModel.Scales
         {
             frequencyDict = weighter;
         }
+        /// <summary>
+        /// more interesting items in the beginning
+        /// </summary>
+        /// <param name="word"></param>
+        /// <returns></returns>
         public double CalcOrder(string word)
         {
-            return CalcWeight(word);
+            return -CalcWeight(word);
         }
 
         public double CalcWeight(string word)

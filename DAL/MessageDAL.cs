@@ -31,15 +31,23 @@ namespace social_analytics.DAL
                          """;
             await DbHelper.ExecuteAsync(sql, messages);
         }
-        public async Task<IEnumerable<MessageModel>> GetMessages(long messageId,long chatId, int limit = -1)
+        public async Task<IEnumerable<MessageModel>> GetMessages(long? messageId,long chatId, int limit = -1)
         {
             MessageModel emptyModel = new MessageModel();
             string limitLine = $"limit {limit}";
-            StringBuilder sql = new StringBuilder(
-                         $"""
+            StringBuilder sql = new StringBuilder();
+            if (messageId != null)
+            {
+                sql.Append($"""
                          select * from message where  (messageId,ChatId) = (@{nameof(emptyModel.MessageId)},@{nameof(emptyModel.ChatId)})
-                         """
-                                                 );
+                         """);
+            }
+            else
+            {
+                sql.Append($"""
+                         select * from message where  ChatId = @{nameof(emptyModel.ChatId)}
+                         """);
+            }
             if (limit != -1)
             {
                 sql.AppendLine(limitLine);
@@ -98,6 +106,20 @@ namespace social_analytics.DAL
                     }
                     sql.AppendLine($"""to_tsvector('{language}', "{filter.SimilarityOptions.FieldName}") @@ to_tsquery('{language}', '{filter.SimilarityOptions.SimilarityWords.Last()}')""");
                 }
+                if (filter.ChatIds != null && filter.ChatIds.Length > 0)
+                {
+                    if (wasWhereLine)
+                    {
+                        sql.AppendLine(" AND ");
+                    }
+                    else
+                    {
+                        sql.AppendLine(whereLine);
+                    }
+                    string idsArr = $"( { string.Join(",",filter.ChatIds) } )";
+                    sql.AppendLine($"chatId in {idsArr}");
+                    
+                }
             }
             if (limit != -1)
             {
@@ -105,6 +127,12 @@ namespace social_analytics.DAL
             }
             sql.AppendLine(";");
             return await DbHelper.Query<MessageModel>(sql.ToString(), new {FromDate = filter.DateOptions?.FromDate, TillDate = filter.DateOptions?.TillDate });
+        }
+
+        public async Task<IEnumerable<MessageModel>> OldestMessages()
+        {
+            string sql = """select * from (select  min("Date") as "Date",chatid  from message m group by (chatId) )as f;""";
+            return await DbHelper.Query<MessageModel>(sql,null);
         }
     }
 }

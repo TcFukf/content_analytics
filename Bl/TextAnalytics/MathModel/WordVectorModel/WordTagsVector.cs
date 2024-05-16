@@ -18,9 +18,8 @@ namespace social_analytics.Bl.TextAnalytics.MathModel.WordVectorModel
         public double GroupSumTagsOfVector { get; private set; }
         public int Length => _tagsWeights.Count;
 
-        // представляет cлово как набор отсортированных слов , отображенных на слова в частотном словаре**
-        // (groupA,n*weight(groupA),weight(groupA))
-        public WordTagsVector(ITagScales frequenctDictScaler,int numberOfBest ,params string[] words)
+        // много чего оптимизироваьт мона .. если веса очень маленькие можно скипать
+        public WordTagsVector(ITagScales frequenctDictScaler,int maxLength ,params string[] words)
         {
             int distance = -1;
             // A1, A2,A3  B C
@@ -28,7 +27,7 @@ namespace social_analytics.Bl.TextAnalytics.MathModel.WordVectorModel
             foreach (var tagKey in words.Select(word=>frequenctDictScaler.GetScalse(word)).OrderBy(tag=>frequenctDictScaler.CalcOrder(tag))      )  
             {
                 distance++;
-                if (distance >= numberOfBest)
+                if (distance >= maxLength)
                 {
                     return;
                 }
@@ -48,6 +47,10 @@ namespace social_analytics.Bl.TextAnalytics.MathModel.WordVectorModel
                     _tagsWeights.Add(tagKey, new Tag() { TagWeight = weight,GroupTagWeight = groupWeight});
                     GroupSumTagsOfVector += groupWeight;
                 }
+                if (GroupSumTagsOfVector != 0 && weight / GroupSumTagsOfVector < 0.1d / 100)
+                {
+                    break;
+                }
             }
         }
         public Tag? GetByKey(string tagKey)
@@ -58,7 +61,10 @@ namespace social_analytics.Bl.TextAnalytics.MathModel.WordVectorModel
             }
             return null;
         }
-
+        public IEnumerable<string> GetTagKeys()
+        {
+            return _tagsWeights.Keys;
+        }
         IEnumerator IEnumerable.GetEnumerator()
         {
             return ((IEnumerable)_tagsWeights).GetEnumerator();

@@ -19,11 +19,21 @@ namespace social_analytics.Bl.TextAnalytics.TextAnalyzer.TextAnalyzer
         }
         public static IEnumerable<double> TextSimilarity(string comparedText, ITagScales frequenctDictScaler, IEnumerable<string> texts, int persentOfText)
         {
-            var words = TextAnalyticsTools.GetStringEntities(comparedText).ToArray();
+            var words = TextAnalyticsTools.GetWordsFromStrings(comparedText).ToArray();
             int comprCount = (int)(words.Length * persentOfText / (double)100);
-            WordTagsVector mainVector = new WordTagsVector(frequenctDictScaler,numberOfBest:comprCount ,words);
-            IEnumerable<WordTagsVector> tags = texts.Select(text => new WordTagsVector(frequenctDictScaler,numberOfBest:comprCount, TextAnalyticsTools.GetStringEntities(text).ToArray()));
+            WordTagsVector mainVector = new WordTagsVector(frequenctDictScaler,maxLength:comprCount ,words);
+            IEnumerable<WordTagsVector> tags = texts.Select(text => new WordTagsVector(frequenctDictScaler,maxLength:comprCount, TextAnalyticsTools.GetWordsFromStrings(text).ToArray()));
             return tags.Select(tag => TextAnalyticsTools.CalculateVectorsSimilarity(mainVector, tag));
+        }
+
+        public IEnumerable<string> GetWords(params string[] texts)
+        {
+            return TextAnalyticsTools.GetWordsFromStrings(texts);
+        }
+
+        public WordTagsVector CreateVector(string  text)
+        {
+            return new WordTagsVector(_tagScales,20,GetWords(text).ToArray());
         }
     }
 }

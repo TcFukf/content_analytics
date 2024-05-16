@@ -12,9 +12,9 @@ namespace social_analytics.Bl.Messages
     public interface IMessagesBL
     {
         Task<IEnumerable<MessageModel>> SearchMessages(MessageSearchOptions filter, int limit = -1);
-        Task<IEnumerable<MessageModel>> GetMessage(long messageId, long chatId, int limit = -1);
-        Task<int> UpdateMessagesInRepositoryFromChats(MessageSearchOptions options, IEnumerable<long> chatId);
-        Task <int> UpdateRepoFromChat(MessageSearchOptions options, long chatId);
+        Task<IEnumerable<MessageModel>> GetMessages(long? messageId, long chatId, int limit = -1);
+        Task<int> UpdateMessagesInRepositoryFromChats(MessageSearchOptions options, IEnumerable<long> chatId, bool fromOldest = false);
+        Task<int> UpdateRepoFromChat(MessageSearchOptions options, long chatId, long fromMessageId = 0);
 
     }
 }

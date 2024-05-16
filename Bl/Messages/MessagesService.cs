@@ -12,16 +12,16 @@ using TelegramWrapper.TelegramParser;
 
 namespace social_analytics.Bl.Messages
 {
-    public class MessagesBL : IMessagesBL
+    public class MessagesService : IMessagesBL
     {
         private readonly IClientParser _parser;
         private readonly IMessageDAL _messageDAL;
-        public MessagesBL(IClientParser parser, IMessageDAL messageDAL)
+        public MessagesService(IClientParser parser, IMessageDAL messageDAL)
         {
             _parser = parser;
             _messageDAL = messageDAL;
         }
-        public async Task<IEnumerable<MessageModel>> GetMessage(long messageId, long chatId, int limit = -1)
+        public async Task<IEnumerable<MessageModel>> GetMessages(long? messageId, long chatId, int limit = -1)
         {
             return await _messageDAL.GetMessages(messageId, chatId, limit);
         }
@@ -36,7 +36,7 @@ namespace social_analytics.Bl.Messages
         /// <param name="options"></param>
         /// <param name="chatIds"></param>
         /// <returns></returns>
-        public async Task<int> UpdateMessagesInRepositoryFromChats(MessageSearchOptions options, IEnumerable<long> chatIds)
+        public async Task<int> UpdateMessagesInRepositoryFromChats(MessageSearchOptions options, IEnumerable<long> chatIds, bool fromOldest)
         {
             if (options == null)
             {
@@ -44,10 +44,16 @@ namespace social_analytics.Bl.Messages
             }
             int added = 0;
             var tasks = new List<Task>();
+            (long chatId, DateTime time, long msgId)[] oldestMessages = null;
+            if (options.DateOptions != null && fromOldest)
+            {
+                oldestMessages = (await _messageDAL.OldestMessages()).Select(msg=>(msg.ChatId,msg.Date,msg.MessageId)).ToArray(); 
+            }
             foreach (var chatId in chatIds)
             {
+                long fromMessage = oldestMessages?.Where(x=>x.Item1 == chatId).Select(x=>x.Item3).FirstOrDefault() ?? 0;
                 Console.WriteLine($"NOW ENTER IN {chatId}");
-                added +=await UpdateRepoFromChat(options,chatId);
+                added += await UpdateRepoFromChat(options,chatId,fromMessage);
                 Console.WriteLine($"NOW END FROM {chatId}");
             }
             Task.WaitAll(tasks.ToArray());
@@ -56,16 +62,15 @@ namespace social_analytics.Bl.Messages
         /// <summary>
         /// OPTIONS.TILLDATE isnt Using.
         /// UPDATE MESAGES FROM options.FromDate TILL now
-        /// return count of added to DB messages (some of them can already be in DB)
+        /// return count of added to DB messages (some of them may already  be in DB)
         /// </summary>
         /// <param name="options"></param>
         /// <param name="chatId"></param>
         /// <returns></returns>
-        public async Task<int> UpdateRepoFromChat(MessageSearchOptions options, long chatId)
+        public async Task<int> UpdateRepoFromChat(MessageSearchOptions options, long chatId, long fromMessageId = 0)
         {
             Message[] messages;
             int addedCount = 0;
-            long fromMessageId = 0;
             do
             {
                 messages = (await _parser.GetMessages(chatId, 100,fromMessageId:fromMessageId)).ToArray();

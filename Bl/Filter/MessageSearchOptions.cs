@@ -14,6 +14,8 @@ namespace social_analytics.Bl.Filter
         public DateOptions DateOptions { get; set; }
         public SimilarityOptions SimilarityOptions { get; set; }
 
+        public long[] ChatIds { get; set; }
+
         public MessageSearchOptions()
         {
         }

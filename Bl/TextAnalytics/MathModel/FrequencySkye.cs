@@ -77,7 +77,7 @@ namespace social_analytics.Bl.TextAnalytics.MathModel
                 }
             }
         }
-        public void LoadWordsFromFile(string fullPath)
+        public void LoadWordsFromJsonFile(string fullPath)
         {
             using (Stream str = new FileStream(fullPath, FileMode.Open))
             {

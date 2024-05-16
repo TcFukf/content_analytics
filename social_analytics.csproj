@@ -31,9 +31,6 @@
     <Reference Include="Telegram.Td">
       <HintPath>..\..\..\TelegramBlyat\td\build\Release\Telegram.Td.dll</HintPath>
     </Reference>
-    <Reference Include="TelegramWrapper">
-      <HintPath>..\TelegramWrapper\bin\Debug\net7.0\TelegramWrapper.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup>
