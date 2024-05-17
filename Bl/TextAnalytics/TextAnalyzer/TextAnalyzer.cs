@@ -39,5 +39,10 @@ namespace social_analytics.Bl.TextAnalytics.TextAnalyzer.TextAnalyzer
         {
             return new WordTagsVector(_tagScales, 20, GetWords(text).ToArray());
         }
+
+        public double VectorSimilarity(WordTagsVector vect1, WordTagsVector vectors)
+        {
+            return TextAnalyticsTools.CalculateVectorsSimilarity(vect1,vectors);
+        }
     }
 }

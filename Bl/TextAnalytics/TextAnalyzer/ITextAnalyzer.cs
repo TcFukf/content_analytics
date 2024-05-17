@@ -8,5 +8,6 @@ namespace social_analytics.Bl.TextAnalytics.TextAnalyzer.TextAnalyzer
         IEnumerable<string> GetWords(params string[] texts);
         IEnumerable<double> TextSimilarity(string comparedText, int persentOfText = 100, params string[] text);
         IEnumerable<double> VectorSimilarity(WordTagsVector vect1, IEnumerable<WordTagsVector> vectors);
+        double VectorSimilarity(WordTagsVector vect1, WordTagsVector vectors);
     }
 }

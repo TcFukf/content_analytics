@@ -78,5 +78,9 @@ namespace social_analytics.Bl.TextAnalytics.MathModel.WordVectorModel
         {
             return _tagsWeights.GetEnumerator();
         }
+        public override string ToString()
+        {
+            return $"GroupSum : {GroupSumTagsOfVector}, {string.Join(",", _tagsWeights.Keys.ToList().GetRange(0,Math.Min(2,Length)))  }";
+        }
     }
 }

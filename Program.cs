@@ -64,10 +64,13 @@ MessageSearchOptions filter = new()
     {
 
         TillDate = DateTime.UtcNow.Date,
-        FromDate = DateTime.UtcNow.AddDays(-1).Date
+        FromDate = DateTime.UtcNow.AddDays(-30).Date
     }
 };
-var classified = TextClassifier.Classify( msgService.SearchMessages(filter).Result,textAnalyzer );
+var messages = msgService.SearchMessages(filter).Result.Where(msg => !string.IsNullOrEmpty(msg.Text));
+var classified = TextClassifier.Classify( messages, textAnalyzer,Epsilon:99/100d ).ToArray();
+var orderd = classified.OrderBy(x=>-x.Itimes.Count()).ToList();
+LogTools.PrintIE(orderd.Select(x=>x.Itimes.Count()));
 //ClientServer tgServer = new ClientServer(msgService,textAnalyzer,tg);
 //Console.WriteLine("START LISTENING");
 //tgServer.ListenRequests().Wait();
