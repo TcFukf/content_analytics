@@ -120,6 +120,12 @@ namespace social_analytics.DAL
                     sql.AppendLine($"chatId in {idsArr}");
                     
                 }
+                if (filter.DateOptions.DateOrdered != null)
+                {
+                    Order type = filter.DateOptions.DateOrdered.Value;
+                    string orderLine = $"order by \"Date\" {Enum.GetName(typeof(Order),type)}";
+                    sql.AppendLine(orderLine);
+                }
             }
             if (limit != -1)
             {

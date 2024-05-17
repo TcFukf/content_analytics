@@ -32,13 +32,12 @@ namespace social_analytics.Bl.BotServer
         public async Task ListenRequests()
         {
             _client.SetUnexpectedMessagesHandler(_requestHandler);
-            Task.Run( ()=>FindNewMessages().Result);
             while (!IsClosed)
             {
                 await Task.Delay(200);
             }
         }
-        private async Task<int> FindNewMessages(int milliSecPeriod = 30*60*1000)
+        public async Task<int> FindingNewMessages(int milliSecPeriod = 30*60*1000)
         {
             int count = 0;
             MessageSearchOptions filter = new()
@@ -65,12 +64,18 @@ namespace social_analytics.Bl.BotServer
                 DateOptions = new DateOptions()
                 {
                     FromDate = DateTime.UtcNow.AddDays(-10),
-                    TillDate = DateTime.UtcNow.AddDays(0).Date
+                    TillDate = DateTime.UtcNow,
+                    DateOrdered = Order.Desc
                 },
                 SimilarityOptions = new SimilarityOptions() { SimilarityWords = words}
             };
             var messages = await _messageService.SearchMessages(filter, limit: 10);
-            return messages = messages.OrderBy(msg => -1 * _textAnalyzer.CreateVector(msg.Text).GroupSumTagsOfVector);
+            return messages = messages.OrderBy(msg => -1 * RatePost(msg.Date,(long)_textAnalyzer.CreateVector(msg.Text).GroupSumTagsOfVector) );
+        }
+        private long RatePost(DateTime date, long textWeight)
+        {
+            long time = ((DateTimeOffset)date.Date).ToUnixTimeSeconds();
+            return (time*textWeight);
         }
 
     }

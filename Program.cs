@@ -1,7 +1,6 @@
 ﻿
 
 using social_analytics;
-using social_analytics.Bl.BotServer;
 using social_analytics.Bl.Filter;
 using social_analytics.Bl.Messages;
 using social_analytics.Bl.structures;
@@ -11,6 +10,7 @@ using social_analytics.Bl.TextAnalytics.MathModel.Scales;
 using social_analytics.Bl.TextAnalytics.MathModel.WordTransformers;
 using social_analytics.Bl.TextAnalytics.MathModel.WordVectorModel;
 using social_analytics.Bl.TextAnalytics.TextAnalyzer.TextAnalyzer;
+using social_analytics.Bl.TextAnalytics.TextClassifier;
 using social_analytics.Bl.TextAnalytics.TextFiles;
 using social_analytics.DAL;
 using social_analytics.Helpers;
@@ -36,23 +36,41 @@ IClientWrapper tg = new TelegramClient(
 MessagesService msgService = new MessagesService(new Parser(tg), new MessageDAL());
 
 FrequencySkye freqSkye = new FrequencySkye(new FrequencyDictionary<string>(),new PorterTransformator());
-freqSkye.LoadWordsFromJsonFile("./"+freqDictPath+ "newsfromRepo(~130k).json");
+freqSkye.LoadWordsFromJsonFile("./"+freqDictPath+ "allwiki.json");
 ITagScales scales = new FreqWordScales(freqSkye);
 TextAnalyzer textAnalyzer = new(scales);
 
 
 
-tg.InitAndWaitAuthorize();
-List<IChatContext> serviceChats = new();
-foreach (var chat in tg.GetNotPrivateChats().Result)
+//tg.InitAndWaitAuthorize();
+//List<IChatContext> serviceChats = new();
+//List<IChatContext> sendingChats = new();
+//foreach (var chat in tg.GetNotPrivateChats().Result)
+//{
+//    Console.WriteLine(chat.Title);
+//    Message last = chat.LastMessage;
+//    if (last?.CanBeDeletedForAllUsers == true)
+//    {
+//        sendingChats.Add(tg.GetOrCreateChatContextWith(chat.Id));
+//    }
+//    else
+//    {
+//        serviceChats.Add( tg.GetOrCreateChatContextWith(chat.Id) );
+//    }
+//}
+MessageSearchOptions filter = new()
 {
-    serviceChats.Add( tg.GetOrCreateChatContextWith(chat.Id) );
-}
+    DateOptions = new()
+    {
 
-
-ClientServer tgServer = new ClientServer(msgService,textAnalyzer,tg);
-Console.WriteLine("START LISTENING");
-tgServer.ListenRequests().Wait();
+        TillDate = DateTime.UtcNow.Date,
+        FromDate = DateTime.UtcNow.AddDays(-1).Date
+    }
+};
+var classified = TextClassifier.Classify( msgService.SearchMessages(filter).Result,textAnalyzer );
+//ClientServer tgServer = new ClientServer(msgService,textAnalyzer,tg);
+//Console.WriteLine("START LISTENING");
+//tgServer.ListenRequests().Wait();
 
 
 

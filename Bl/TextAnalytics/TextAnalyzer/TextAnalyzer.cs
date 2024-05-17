@@ -14,16 +14,20 @@ namespace social_analytics.Bl.TextAnalytics.TextAnalyzer.TextAnalyzer
         }
         public IEnumerable<double> TextSimilarity(string comparedText, int persentOfText = 100, params string[] text)
         {
-            return TextSimilarity(comparedText,_tagScales,text, persentOfText);
+            return TextSimilarity(comparedText, _tagScales, text, persentOfText);
 
         }
         public static IEnumerable<double> TextSimilarity(string comparedText, ITagScales frequenctDictScaler, IEnumerable<string> texts, int persentOfText)
         {
             var words = TextAnalyticsTools.GetWordsFromStrings(comparedText).ToArray();
             int comprCount = (int)(words.Length * persentOfText / (double)100);
-            WordTagsVector mainVector = new WordTagsVector(frequenctDictScaler,maxLength:comprCount ,words);
-            IEnumerable<WordTagsVector> tags = texts.Select(text => new WordTagsVector(frequenctDictScaler,maxLength:comprCount, TextAnalyticsTools.GetWordsFromStrings(text).ToArray()));
+            WordTagsVector mainVector = new WordTagsVector(frequenctDictScaler, maxLength: comprCount, words);
+            IEnumerable<WordTagsVector> tags = texts.Select(text => new WordTagsVector(frequenctDictScaler, maxLength: comprCount, TextAnalyticsTools.GetWordsFromStrings(text).ToArray()));
             return tags.Select(tag => TextAnalyticsTools.CalculateVectorsSimilarity(mainVector, tag));
+        }
+        public IEnumerable<double> VectorSimilarity(WordTagsVector vect1, IEnumerable<WordTagsVector> vectors)
+        {
+            return vectors.Select(vect => TextAnalyticsTools.CalculateVectorsSimilarity(vect1, vect)); ;
         }
 
         public IEnumerable<string> GetWords(params string[] texts)
@@ -31,9 +35,9 @@ namespace social_analytics.Bl.TextAnalytics.TextAnalyzer.TextAnalyzer
             return TextAnalyticsTools.GetWordsFromStrings(texts);
         }
 
-        public WordTagsVector CreateVector(string  text)
+        public WordTagsVector CreateVector(string text)
         {
-            return new WordTagsVector(_tagScales,20,GetWords(text).ToArray());
+            return new WordTagsVector(_tagScales, 20, GetWords(text).ToArray());
         }
     }
 }

@@ -15,10 +15,15 @@ namespace social_analytics.Bl.TextAnalytics.MathModel.WordVectorModel
     {
         private Dictionary<string, Tag> _tagsWeights = new();
         private double _groupSumTagsOfVector;
+
         public double GroupSumTagsOfVector { get; private set; }
         public int Length => _tagsWeights.Count;
 
         // много чего оптимизироваьт мона .. если веса очень маленькие можно скипать
+        public override int GetHashCode()
+        {
+            return string.GetHashCode($"{_groupSumTagsOfVector}_{Length}");
+        }
         public WordTagsVector(ITagScales frequenctDictScaler,int maxLength ,params string[] words)
         {
             int distance = -1;

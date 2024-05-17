@@ -10,6 +10,7 @@ namespace social_analytics.Bl.Filter
     {
         public DateTime? FromDate { get; set; }
         public DateTime? TillDate { get; set; }
+        public Order? DateOrdered { get; set; } = null;
         public DateOptions()
         {
             if (TillDate == null)
