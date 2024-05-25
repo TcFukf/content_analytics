@@ -17,12 +17,12 @@ namespace social_analytics.Bl.BotServer
 {
     public class ClientServer
     {
-        private IMessagesBL _messageService;
+        private IMessagesService _messageService;
         private TextAnalyzer _textAnalyzer;
         private IClientWrapper _client;
         private IUnexpectedMessagaHandler _requestHandler;
         public bool IsClosed { get; set; }
-        public ClientServer(IMessagesBL messageService, TextAnalyzer textAnalyzer,IClientWrapper client)
+        public ClientServer(IMessagesService messageService, TextAnalyzer textAnalyzer,IClientWrapper client)
         {
             _messageService = messageService;
             _textAnalyzer = textAnalyzer;

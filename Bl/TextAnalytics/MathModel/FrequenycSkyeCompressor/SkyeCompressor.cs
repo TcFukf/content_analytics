@@ -6,8 +6,5 @@ public class SkyeCompressor
     public IFrequencyDictionary<string> Compress()
     {
         throw new NotImplementedException();
-        Dictionary<string, int> compressed = new();
-
-        return null;
     }
 }

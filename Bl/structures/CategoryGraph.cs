@@ -9,25 +9,25 @@ namespace social_analytics.Bl.structures
 {
     public class CategoryGraph<TKey>
     {
-        public Node<TKey> Head { get; init; }
+        public CategoryNode<TKey> Head { get; init; }
         public override string ToString()
         {
             return Head.ToString();
         }
     }
-    public class Node<Tkey>
+    public class CategoryNode<Tkey>
     {
         public Tkey Key { get; init; }
-        public HashSet<Node<Tkey>> Nodes { get; private set; }
+        public HashSet<CategoryNode<Tkey>> Nodes { get; private set; }
         /// <summary>
         /// return true if node were contained
         /// </summary>
         /// <returns></returns>
-        public bool RelateNodesBidirectionaly(Node<Tkey> node)
+        public bool RelateNodesBidirectionaly(CategoryNode<Tkey> node)
         {
-            if (Nodes == null)
+            if (this.Nodes == null)
             {
-                Nodes = new HashSet<Node<Tkey>>();
+                Nodes = new HashSet<CategoryNode<Tkey>>();
             }
             if (node.Nodes == null)
             {
@@ -37,14 +37,13 @@ namespace social_analytics.Bl.structures
             node.Nodes.Add(this);
             return state;
         }
-        public bool RelateNodesUnidirectionally(Node<Tkey> node)
+        public bool RelateNodesUnidirectionally(CategoryNode<Tkey> node)
         {
             if (Nodes == null)
             {
-                Nodes = new HashSet<Node<Tkey>>();
+                Nodes = new HashSet<CategoryNode<Tkey>>();
             }
-            bool state = this.Nodes.Add(node);
-            return state;
+            return this.Nodes.Add(node);
         }
         public override string ToString()
         {

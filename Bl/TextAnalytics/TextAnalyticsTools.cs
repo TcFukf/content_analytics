@@ -120,6 +120,7 @@ namespace social_analytics.Bl.TextAnalytics
         ///
         public static double SlowDecreasingRate(double distance,int maxDistance)
         {
+            // for more agile ranging in futire
             return 1;
             if (distance < 0)
             {
@@ -131,7 +132,7 @@ namespace social_analytics.Bl.TextAnalytics
         }
 
         /// <summary>
-        ///0<=F(x)<=1 . F(x) -> 1 if Wg->1 and versa
+        ///  0<=F(x)<=1 . F(x) -> 1 if Wg->1 and versa
         /// </summary>
         /// <param name="WG"></param>
         /// <param name="dist"></param>
@@ -149,17 +150,8 @@ namespace social_analytics.Bl.TextAnalytics
             return 1 - 1 / (k*raretyWeight+1);
         }
 
-        private static IEnumerable<KeyValuePair<string,Tag>> GetSmallestVector(WordTagsVector left, WordTagsVector right)
-        {
-            if (right.Length > left.Length)
-            {
-                return left;
-            }
-            return right;
-        }
         public static double CalculateVectorsSimilarity(WordTagsVector mainVector, WordTagsVector tagVector)
         {
-            //throw new Exception("думой как лучше сделать шобы весы считало и выполнялась пермутативность");
             // if V1[A1,B1,C1] , V2[A2,D1] - пройтись по обьединению множеств и тогда перестановки работают
             // или правильней посчитать сумму обьединений через  Vector1.TotalSum + Vector2.TotalSum  - intersectWeight(тут оно и считается вроде)
 

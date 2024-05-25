@@ -10,7 +10,7 @@ namespace social_analytics.Bl.TextAnalytics.TextClassifier
     public class TextCategory<TItems>
     {
         public WordTagsVector HeadVector { get; set; }
-        public List<TItems> Itimes   { get; set; }
+        public List<TItems> Values   { get; set; }
         public override int GetHashCode()
         {
             return HeadVector.GetHashCode();

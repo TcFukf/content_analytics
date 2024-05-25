@@ -7,7 +7,7 @@ using System.Text;
 
 namespace social_analytics.Bl.structures
 {
-    public class FrequencyDictionary<Tkey> : IFrequencyDictionary<Tkey>, IHavePlustOperation<FrequencyDictionary<Tkey>>
+    public class FrequencyDictionary<Tkey> : IFrequencyDictionary<Tkey>
     {
         public long TotalCount { get; private set; } = 0;
         private Dictionary<Tkey, int> _dict;
@@ -106,16 +106,14 @@ namespace social_analytics.Bl.structures
             }
             return this;
         }
-
-        public FrequencyDictionary<Tkey> Value()
-        {
-            return this;
-        }
-
         public int Sum()
         {
             return _dict.Values.Sum();
         }
+        /// <summary>
+        /// may be memory error
+        /// </summary>
+        /// <returns></returns>
         public string GetJsonDict()
         {
             return JsonConvert.SerializeObject(_dict,Formatting.Indented);

@@ -15,17 +15,16 @@ namespace social_analytics.Bl.TextAnalytics.TextClassifier
                 throw new ArgumentException("Epsilon must be 0<=eps<=1");
             }
             // OPTIMAZe
-            List<Node<WordTagsVector>> vectorsNodes = new();
+            List<CategoryNode<WordTagsVector>> vectorsNodes = new();
             Dictionary<MessageModel, WordTagsVector> messVector = new();
             foreach (var msg in messages)
             {
-                Node<WordTagsVector> node = new() { Key = analyzer.CreateVector(msg.Text) };
+                CategoryNode<WordTagsVector> node = new() { Key = analyzer.CreateVector(msg.Text) };
                 messVector.Add(msg,node.Key);
                 vectorsNodes.Add(node);
             }
             Dictionary<WordTagsVector, CategoryGraph<WordTagsVector>> categoriesTable = new();
 
-            // дял одного вектора БЕЗ ГРАФА найти связи
             foreach (var mainVector in vectorsNodes.OrderBy(v => -v.Key.GroupSumTagsOfVector))
             {
                 if (!categoriesTable.ContainsKey(mainVector.Key))
@@ -39,11 +38,11 @@ namespace social_analytics.Bl.TextAnalytics.TextClassifier
                 (MessageModel Message, CategoryGraph<WordTagsVector> Category) tp = (msg.Key, categoriesTable[msg.Value]);
                 if (categories.ContainsKey(tp.Category.Head.Key))
                 {
-                    categories[tp.Category.Head.Key].Itimes.Add(tp.Message);
+                    categories[tp.Category.Head.Key].Values.Add(tp.Message);
                 }
                 else
                 {
-                    categories.Add(tp.Category.Head.Key,new TextCategory<MessageModel>() { HeadVector = tp.Category.Head.Key,Itimes = new() { tp.Message} });
+                    categories.Add(tp.Category.Head.Key,new TextCategory<MessageModel>() { HeadVector = tp.Category.Head.Key,Values = new() { tp.Message} });
                 }
             }
             return categories.Values;
@@ -51,7 +50,13 @@ namespace social_analytics.Bl.TextAnalytics.TextClassifier
 
         }
 
-        private static void CategorizeByVector(ITextAnalyzer analyzer, double Eps, List<Node<WordTagsVector>> vectorsNodes, Dictionary<WordTagsVector, CategoryGraph<WordTagsVector>> categories, Node<WordTagsVector>? mainVector)
+        public static double RateCategory(TextCategory<MessageModel> category)
+        {
+            double countRate = 2*category.Values.Count() / ( 1 + Math.Pow((0.02d* category.Values.Count() - 0.35),2) );
+            return countRate * Math.Sqrt( category.HeadVector.GroupSumTagsOfVector );
+        }
+
+        private static void CategorizeByVector(ITextAnalyzer analyzer, double Eps, List<CategoryNode<WordTagsVector>> vectorsNodes, Dictionary<WordTagsVector, CategoryGraph<WordTagsVector>> categories, CategoryNode<WordTagsVector>? mainVector)
         {
             CategoryGraph<WordTagsVector> category = new() { Head = mainVector };
             categories.Add(mainVector.Key, category);
@@ -63,7 +68,7 @@ namespace social_analytics.Bl.TextAnalytics.TextClassifier
                     continue;
                 }
                 double simil = analyzer.VectorSimilarity(vect.Key, mainVector.Key);
-                if (simil > Eps)
+                if (simil >= Eps)
                 {
                     if (!categories.ContainsKey(vect.Key))
                     {

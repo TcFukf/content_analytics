@@ -12,7 +12,7 @@ using TelegramWrapper.TelegramParser;
 
 namespace social_analytics.Bl.Messages
 {
-    public class MessagesService : IMessagesBL
+    public class MessagesService : IMessagesService
     {
         private readonly IClientParser _parser;
         private readonly IMessageDAL _messageDAL;
