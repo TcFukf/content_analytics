@@ -1,4 +1,5 @@
-﻿using social_analytics.Bl.TextAnalytics.MathModel.WordVectorModel;
+﻿using social_analytics.Bl.TextAnalytics.MathModel.Scales;
+using social_analytics.Bl.TextAnalytics.MathModel.WordVectorModel;
 
 namespace social_analytics.Bl.TextAnalytics.TextAnalyzer.TextAnalyzer
 {
@@ -9,5 +10,6 @@ namespace social_analytics.Bl.TextAnalytics.TextAnalyzer.TextAnalyzer
         IEnumerable<double> TextSimilarity(string comparedText, int persentOfText = 100, params string[] text);
         IEnumerable<double> VectorSimilarity(WordTagsVector vect1, IEnumerable<WordTagsVector> vectors);
         double VectorSimilarity(WordTagsVector vect1, WordTagsVector vectors);
+        public ITagScales Scales { get; }
     }
 }

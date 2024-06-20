@@ -39,18 +39,22 @@ namespace social_analytics.Bl.BotServer
             {
                 _texts.Enqueue(new TextCategory<MessageModel>() { Values = new() { message }, HeadVector = vector });
             }
-            PostHotCategoriesAndDequeue().Wait();
             DequeueLowRateCategories();
+            PostHotCategoriesAndDequeue().Wait();
         }
         private void DequeueLowRateCategories()
         {
+            if (_texts.Count <= 0)
+            {
+                return;
+            }
             int seen = 0;
-
+            double critRate = TextClassifier.GetLowWeight(_analyzer.Scales);
             while (_texts?.Count > 0 && seen < _texts.Count)
             {
                 var category = _texts.Dequeue();
                 seen++;
-                if (!CategotyIsLowRate(category))
+                if (category.HeadVector.GroupSumTagsOfVector >= critRate &&  !CategotyIsBoring(category) && !TextClassifier.IsIgnoredVector(category.HeadVector,_analyzer))
                 {
                     _texts.Enqueue(category);
                 }
@@ -64,7 +68,7 @@ namespace social_analytics.Bl.BotServer
             {
                 var category = _texts.Dequeue();
                 seen++;
-                if (CategoryIsHot(category))
+                if (CategoryIsInteresting(category))
                 {
                     await PostCategoty(category);
                 }
@@ -74,21 +78,24 @@ namespace social_analytics.Bl.BotServer
                 }
             }
         }
-        private bool CategotyIsLowRate(TextCategory<MessageModel> category)
+        private bool CategotyIsBoring(TextCategory<MessageModel> category)
         {
             DateTime addedTime = category.Values.MinBy(msg => msg.Date).Date;
-            var stamp = addedTime - DateTime.UtcNow;
-            return category.Values.Count() < 2 && stamp.Minutes > 30;
+            var passedTime = addedTime - DateTime.UtcNow;
+            return category.Values.Count() < 2 && passedTime.Minutes > 30;
         }
-        private bool CategoryIsHot(TextCategory<MessageModel> category)
+        private bool CategoryIsInteresting(TextCategory<MessageModel> category)
         {
-
-            DateTime addedTime = category.Values.MinBy(msg=>msg.Date).Date;
-            var stamp = addedTime - DateTime.UtcNow;
             return category.Values.Count() >= 2;
         }
         private async Task PostCategoty(TextCategory<MessageModel> category)
         {
+                string statLine = $"categoty:{string.Join(", ",category.HeadVector.Select(tg=>tg.Key))}" + $"\nhsSum{category.HeadVector.GroupSumTagsOfVector}" +
+                    $"\n Count:{category.Values.Count}" ;
+            foreach (var id in channelIds)
+            {
+                _client.SendMessage(id, statLine);
+            }
             foreach (var msg in category.Values)
             {
                 foreach (var id in channelIds)
@@ -113,14 +120,15 @@ namespace social_analytics.Bl.BotServer
         }
         private void OnAddMessage(object context,OnMessageAddEventArg arg)
         {
-            if (arg.ReceivedMessage == null)
+            if (arg.ReceivedMessage == null || string.IsNullOrEmpty(arg.ReceivedMessage.Text) )
             {
                 return;
             }
-            Console.WriteLine($"ADDED {arg.ReceivedMessage.ChatId}");
+            Console.WriteLine($"ADDED, chatId:{arg.ReceivedMessage.ChatId}");
             TextCategory<MessageModel> categoryToAdd = null;
             double maxSimil = 0;
             var vect = _analyzer.CreateVector(arg.ReceivedMessage.Text);
+
             foreach (var category in _texts)
             {
                 double simil = _analyzer.VectorSimilarity(category.HeadVector, vect);

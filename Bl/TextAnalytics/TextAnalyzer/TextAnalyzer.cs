@@ -8,6 +8,9 @@ namespace social_analytics.Bl.TextAnalytics.TextAnalyzer.TextAnalyzer
     public class TextAnalyzer : ITextAnalyzer
     {
         private readonly ITagScales _tagScales;
+
+        public ITagScales Scales => _tagScales;
+
         public TextAnalyzer(ITagScales scales)
         {
             _tagScales = scales;
