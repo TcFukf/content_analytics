@@ -44,6 +44,7 @@ TextAnalyzer textAnalyzer = new(scales);
 
 
 tg.InitAndWaitAuthorize();
+
 List<IChatContext> dataProviderChats = new();
 List<IChatContext> sendingChats = new();
 Console.WriteLine("INDEXED CHATS:");
@@ -79,48 +80,3 @@ ClientServer tgServer = new ClientServer(msgService,textAnalyzer,tg);
 Console.WriteLine("START LISTENING");
 Task.Run(()=>tgServer.ListenRequests() ).Wait();
 
-
-static void CreateFreqDictsFromFiles(string currentDir, string bookPath, string ouotr, string[] files, Queue<Thread> threads, int threadCount)
-{
-    foreach (var file in files)
-    {
-        Console.WriteLine(file);
-        while (threads.Count() >= threadCount)
-        {
-            Console.WriteLine("wat");
-            Thread.Sleep(3 * 60_000);
-        }
-        var th = new Thread(() =>
-        {
-            Console.WriteLine($"{file} started, {threads.Count}");
-            string fileName = Path.GetFileNameWithoutExtension(file);
-            ParsBigFile.CreateFreqDictionarieFromFile(file, currentDir + bookPath + "\\" + ouotr + "\\" + fileName);
-            Console.WriteLine($"{file} ended, {threads.Count}");
-            lock (threads)
-            {
-                if (threads.Count > 0)
-                {
-                    threads.Dequeue();
-                }
-            }
-        });
-        threads.Enqueue(th);
-        th.Start();
-    }
-    while (threads.Count > 0)
-    {
-        Console.WriteLine("running");
-        Thread.Sleep(60_000);
-    }
-}
-
-static void ShowSimilarities(TextAnalyzer textAnalyzer, MessageModel[] messages, MessageModel post)
-{
-    var results = textAnalyzer.TextSimilarity(post.Text, 100, messages.Select(mg=>mg.Text).ToArray()).ToArray();
-    ((long, long), double)[] res = new ((long, long), double)[results.Length];
-    for (int i = 0; i < results.Length; i++)
-    {
-        res[i] = ((messages[i].MessageId, messages[i].ChatId ), results[i]);
-    }
-    LogTools.PrintIE(res.OrderBy(t => t.Item2));
-}

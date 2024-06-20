@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace social_analytics
 {
-    public static  class Testing
+    public static  class TextSamples
     {
 
         //https://glasnarod.ru/specoperaciya/bitva-za-chasov-yar-obstanovka-po-sostoyaniju-na-08-00-5-aprelya-2024-goda/
@@ -26,57 +26,6 @@ namespace social_analytics
         {
             return new string[] {text1,text2,text3,text4 };
         }
-        // у каждого слова смотрим по 2 слева и 2 справа, , если n слов в тексте получаем n entityWord где у каждой сущности 4 "соседа" (по 2 у крайних)
-        // проходимся по словарю сущностей (Dict<string Word, List<entityWord>>)
-        public static List<string> FindEntityGroups(int maxGroupLength,params string[] matches)
-        {
-            Dictionary<string, IFrequencyDictionary<string>> freqs = new();
-            Queue<string> group = new Queue<string>();
-            int currentInputIndex;
-            for (currentInputIndex = 0; currentInputIndex < maxGroupLength; currentInputIndex++)
-            {
-                if ( currentInputIndex < matches.Count())
-                {
-                    group.Enqueue(matches[currentInputIndex]);
-                }
-            }
-            while( currentInputIndex < matches.Count())
-            {
-
-                var arr = group.ToArray();
-                for (int wordIndex = 0; wordIndex < arr.Length; wordIndex++)
-                {
-                    string word = arr[wordIndex];
-                    if (freqs.ContainsKey(word) == false)
-                    {
-                        freqs[word] = new FrequencyDictionary<string>();
-                    }
-
-                    for (int j = 0; j < arr.Length; j++)
-                    {
-                        if (wordIndex != j)
-                        {
-                            freqs[word].AddFrequency(arr[j], 1);
-                        }
-                    }
-                }
-                group.Dequeue();
-                group.Enqueue(matches[currentInputIndex]);
-                currentInputIndex++;
-            }
-            List<string> mb = new();
-            HashSet<string> seen = new();
-            foreach (var entity in freqs)
-            {
-                var canBe = freqs[entity.Key].FindMoreThanAverageKeys().Where(word=>!seen.Contains(word));
-                if (canBe.Count() > 0)
-                {
-                string add = string.Join(", ",canBe);
-                mb.Add(entity.Key+" "+add);
-                }
-                seen.Add(entity.Key) ;
-            }
-            return mb;
-        }
+       
     }
 }
